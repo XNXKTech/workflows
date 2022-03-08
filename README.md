@@ -13,7 +13,11 @@ Here are the reusable workflows used by all XNXK projects.
 ## Supported Frameworks
 
 - [Laravel](#laravel)
+
+## Supported Tools
+
 - [Cloudbase](#cloudbase)
+- [Terraform](#terraform)
 
 ## PHP
 
@@ -28,5 +32,7 @@ Here are the reusable workflows used by all XNXK projects.
 ## Laravel
 
 ## Cloudbase
+
+## Terraform
 
 
