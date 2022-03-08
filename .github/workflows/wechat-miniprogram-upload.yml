@@ -1,0 +1,112 @@
+name: Mini Program
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'Stringified JSON object listing target Node versions'
+        default: '16.x'
+        required: true
+        type: string
+
+jobs:
+  mini-program:
+    name: ${{ matrix.node-versions }}
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-versions: ${{fromJson(inputs.versions)}}
+
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/cache@v2.1.7
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm
+
+      - name: Install package.json dependencies with NPM
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm i
+
+      - uses: actions/cache@v2.1.7
+        id: miniprogram-node-modules-cache
+        with:
+          path: |
+            miniprogram_npm
+          key: ${{ runner.os }}-miniprogram-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-miniprogram
+
+      - name: MiniProgram npm pack
+        if: steps.miniprogram-node-modules-cache.outputs.cache-hit != 'true'
+        run: |
+          npm run npmpack
+
+      - name: Decrypt upload private key
+        run: gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.UPLOAD_SECRET_PASSPHRASE }}" --output ./secrets/private.key  ./secrets/private.key.gpg
+
+      - name: Mini program upload
+        run: |
+          npx miniprogram-ci upload --project-type miniProgram --pp ./ --appid ${{ secrets.MINI_APP_ID }} --pkp ./secrets/private.key --uv ${{ github.event.release.tag_name }} -r 8 --enable-es7 'true' --enable-minify 'true'
+
+      - name: WeWork Notification
+        run: |
+          curl '${{ secrets.WEWORK_LIANHE_BOT_KEY }}' \
+             -H 'Content-Type: application/json' \
+             -d '
+            {
+              "msgtype": "template_card",
+              "template_card": {
+                "card_type": "text_notice",
+                "source": {
+                  "icon_url": "https://wework.qpic.cn/wwpic/252813_jOfDHtcISzuodLa_1629280209/0",
+                  "desc": "词曲云"
+                },
+                "main_title": {
+                  "title": "${{ github.repository }}"
+                },
+                "emphasis_content": {
+                  "title": "${{ github.event.release.tag_name }}"
+                },
+                "horizontal_content_list": [
+                  {
+                    "keyname": "提交者",
+                    "value": "${{ github.actor }}"
+                  },
+                  {
+                    "keyname": "Commit Hash",
+                    "value": "点击访问",
+                    "type": 1,
+                    "url": "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+                  }
+                ],
+                "jump_list": [
+                  {
+                    "type": 2,
+                    "appid": "${{ secrets.MINI_APP_ID }}",
+                    "pagepath": "pages/index/index",
+                    "title": "跳转小程序"
+                  }
+                ],
+                "card_action": {
+                  "type": 1,
+                  "url": "https://work.weixin.qq.com/?from=openApi",
+                  "appid": "${{ secrets.MINI_APP_ID }}",
+                  "pagepath": "pages/index/index"
+                }
+              }
+            }'
