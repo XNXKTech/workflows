@@ -53,7 +53,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.CI_PAT }}
-          commit-message: "style: fix typo"
+          commit-message: "style: fix typo [skip ci]"
           title: "style: fix typo"
           branch-suffix: short-commit-hash
           branch: style-fix-typo
