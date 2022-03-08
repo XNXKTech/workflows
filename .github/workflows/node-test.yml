@@ -5,8 +5,8 @@ on:
     inputs:
       versions:
         description: 'Stringified JSON object listing target Node versions'
-        default: '16.x'
         required: true
+        default: "[\"16\"]"
         type: string
 
 jobs:
