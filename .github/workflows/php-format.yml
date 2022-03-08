@@ -1,0 +1,52 @@
+name: PHP Code Style
+
+on:
+  workflow_call:
+    inputs:
+      php-versions:
+        default: '8.0'
+        required: false
+        type: string
+    secrets:
+      CI_PAT:
+        required: true
+
+jobs:
+  php-cs-fixer:
+    name: PHP CS Fixer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP ${{ inputs.php-versions }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-versions }}
+          extensions: mbstring, dom, fileinfo
+          coverage: xdebug
+          tools: php-cs-fixer, composer:v2
+
+      - name: PHP CS Fixer
+        run: ./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.dist.php
+
+      - name: Create Pull Request
+        if: ${{ always() }}
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.CI_PAT }}
+          commit-message: "style: fix typo"
+          title: "style: fix typo"
+          branch-suffix: short-commit-hash
+          branch: style-fix-typo
+          reviewers: XNXKTech/infra
+          labels: |
+            status/needs-review
+          delete-branch: true
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
