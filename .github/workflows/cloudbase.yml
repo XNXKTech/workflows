@@ -1,0 +1,30 @@
+name: Cloudbase Deploy
+
+on:
+  workflow_call:
+    secrets:
+      secretId:
+        description: "The ID of the secret to use for the Cloudbase Deploy"
+        required: true
+      secretKey:
+        description: "The secret key for the Cloudbase Deploy"
+        required: true
+      envId:
+        description: "The envId of the Cloudbase Deploy"
+        required: true
+
+jobs:
+  Deploy:
+
+    name: Cloudbase Deploy
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy static to Tencent CloudBase
+        id: deployStatic
+        uses: TencentCloudBase/cloudbase-action@v2
+        with:
+          secretId: ${{ secrets.TENCENTCLOUD_CLOUDBASE_SECRET_ID }}
+          secretKey: ${{ secrets.TENCENTCLOUD_CLOUDBASE_SECRET_KEY }}
+          envId: ${{ secrets.ENV_ID }}
