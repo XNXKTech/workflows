@@ -1,0 +1,94 @@
+name: Mini Program
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'Stringified JSON object listing target Node versions'
+        default: '16.x'
+        required: true
+        type: string
+
+jobs:
+  mini-program:
+    name: ${{ matrix.node-versions }}
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-versions: ${{fromJson(inputs.versions)}}
+
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/cache@v2.1.7
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm
+
+      - name: Install package.json dependencies with NPM
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm i
+
+      - uses: actions/cache@v2.1.7
+        id: miniprogram-node-modules-cache
+        with:
+          path: |
+            miniprogram_npm
+          key: ${{ runner.os }}-miniprogram-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-miniprogram
+
+      - name: MiniProgram npm pack
+        if: steps.miniprogram-node-modules-cache.outputs.cache-hit != 'true'
+        run: |
+          npm run npmpack
+
+      - name: Decrypt upload private key
+        run: gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.UPLOAD_SECRET_PASSPHRASE }}" --output ./secrets/private.key  ./secrets/private.key.gpg
+
+      - name: Mini program preview
+        run: |
+          mkdir ./tmp
+          npx miniprogram-ci preview --project-type miniProgram --pp ./ --appid ${{ secrets.MINI_APP_ID }} --pkp ./secrets/private.key --uv ${{ steps.package-version.outputs.current-version }} -r 7 --enable-es7 'true' --qrcode-format image --qrcode-output-dest './tmp/qrcode.jpg' --enable-minify true --enable-autoPrefixWXSS true --enable-minifyWXSS true --enable-minifyJS true
+  
+      - name: Deploy preview assets to COS
+        uses: saltbo/uptoc@v1.4.3
+        if: github.event_name == 'pull_request'
+        with:
+          driver: cos
+          region: ap-chengdu
+          bucket: ctu2-miniprogram-ci-preview-assets-${{ secrets.TENCENTCLOUD_APP_ID }}
+          dist: ./tmp/qrcode.jpg
+          saveroot: /miniprogram-ci/preview/${{ github.repository }}/workflow/${{ github.run_id }}/
+        env:
+          UPTOC_UPLOADER_AK: ${{ secrets.TENCENTCLOUD_COS_SECRET_ID }}
+          UPTOC_UPLOADER_SK: ${{ secrets.TENCENTCLOUD_COS_SECRET_KEY }}
+
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.CI_PAT }}
+          script: |
+            const output = `#### Preview QRCode:
+            ![preview_qrcode](https://miniprogram-static-preview.lianhehuyu.com/miniprogram-ci/preview/${{ github.repository }}/workflow/${{ github.run_id }}/qrcode.jpg)
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
