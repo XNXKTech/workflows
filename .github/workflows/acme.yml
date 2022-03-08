@@ -1,0 +1,108 @@
+name: Python tests
+
+on:
+  workflow_call:
+    inputs:
+      ca:
+        default: "zerossl"
+        description: 'The CA to use for the tests.'
+        required: false
+        type: string
+      domains:
+        default: "[\"example.com\"]"
+        description: 'The domains to issue certificate.'
+        required: true
+        type: string
+      debug:
+        default: '--debug'
+        description: 'Enable debug mode.'
+        required: false
+        type: string
+    secrets:
+      DNSAPI:
+        required: true
+      CI_PAT:
+        required: true
+      SERVER_USER:
+        required: true
+      EAB_KID:
+        required: true
+      EAB_HMAC_KEY:
+        required: true
+env:
+  ACME: /home/${{ secrets.SERVER_USER }}/.acme.sh/acme.sh
+  DNSAPI: ${{ secrets.DNSAPI }}
+
+jobs:
+  acme:
+    name: Issue Certificates
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        domains: ${{ fromJson(inputs.domains) }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+    - name : Cache ACME.sh
+      uses : actions/cache@v2
+      id: acme-cache
+      with :
+        path : |
+          /home/${{ secrets.SERVER_USER }}/.acme.sh
+        key: ${{ runner.os }}-acme-${{ github.run_id }}
+        restore-keys : |
+          ${{ runner.os }}-acme
+
+    - name: Install & Configure ACME.SH
+      if: steps.acme-cache.outputs.cache-hit != 'true'
+      run: |
+        echo "$DNSAPI" >> /home/${{ secrets.SERVER_USER }}/.acme.sh/account.conf
+        curl https://get.acme.sh | sh
+
+    - name: Setup ZeroSSL
+      if: steps.acme-cache.outputs.cache-hit != 'true' && env.CA == 'zerossl'
+      run: |
+        $ACME --register-account --server zerossl --eab-kid ${{ secrets.EAB_KID }} --eab-hmac-key ${{ secrets.EAB_HMAC_KEY }}
+        $ACME --set-default-ca --server zerossl
+
+    - name: Setup LetsEncrypt
+      if: steps.acme-cache.outputs.cache-hit != 'true' && env.CA == 'letsencrypt'
+      run: |
+        $ACME --set-default-ca --server letsencrypt
+
+    - name: Issue ${{ matrix.domains }} Certificates
+      run: |
+        mkdir -p ./ssl/${{ matrix.domains }}
+        mkdir -p ./ssl/${{ matrix.domains }}_ecc
+        $ACME --issue --dns dns_ali -d ${{ matrix.domains }} -d '*.${{ matrix.domains }}' --dnssleep 60 ${{ inputs.debug }}
+        $ACME --issue --dns dns_ali -d ${{ matrix.domains }} -d '*.${{ matrix.domains }}' --keylength ec-256 --dnssleep 60 ${{ inputs.debug }}
+
+    - name: Install ${{ matrix.domains }} Certificates
+      if: ${{ always() }}
+      run: |
+        $ACME --installcert -d ${{ matrix.domains }} --key-file ./ssl/${{ matrix.domains }}/${{ matrix.domains }}.key --fullchain-file ./ssl/${{ matrix.domains }}/fullchain.cer
+        $ACME --installcert -d ${{ matrix.domains }} --ecc --key-file ./ssl/${{ matrix.domains }}_ecc/${{ matrix.domains }}.key --fullchain-file ./ssl/${{ matrix.domains }}_ecc/fullchain.cer
+
+    - name : Create Pull Request
+      if: ${{ always() }}
+      id: cpr
+      uses : peter-evans/create-pull-request@v3
+      with :
+        token : ${{ secrets.CI_PAT }}
+        commit-message: Update ${{ matrix.domains }} certificate files
+        title: Update ${{ matrix.domains }} certificate files
+        branch: update-${{ matrix.domains }}-certificate
+        reviewers: XNXKTech/infra
+        labels: |
+          🏗 Status/Needs-Review
+
+    - name : Check outputs
+      run : |
+        echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+        echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
