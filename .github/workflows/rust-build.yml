@@ -1,0 +1,36 @@
+name: Rust build
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        default: "[\"stable\"]"
+        description: 'The version of rustfmt to use'
+        required: false
+        type: string
+
+jobs:
+  bulid:
+    name: 'Build'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        versions: ${{ fromJson(inputs.versions) }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.versions }}
+
+      - uses: Swatinem/rust-cache@v1
+
+      - run: cargo build --release
+

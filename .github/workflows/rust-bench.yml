@@ -1,0 +1,35 @@
+name: Rust bench
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        default: "[\"stable\"]"
+        description: 'The version of rustfmt to use'
+        required: false
+        type: string
+
+jobs:
+  bench:
+    name: 'Bench'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        versions: ${{ fromJson(inputs.versions) }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Rust ${{ matrix.versions }}
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.versions }}
+
+      - uses: Swatinem/rust-cache@v1
+
+      - run: cargo bench --verbose --workspace --all-features
+

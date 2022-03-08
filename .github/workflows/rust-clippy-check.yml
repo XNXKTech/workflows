@@ -1,0 +1,52 @@
+name: Rust clippy check
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        default: "[\"stable\"]"
+        description: 'The version of rustfmt to use'
+        required: false
+        type: string
+      components:
+        default: "[\"clippy\"]"
+        required: false
+        type: string
+      toolchain:
+        default: "[\"stable\"]"
+        description: 'The toolchain to use'
+        required: false
+        type: string
+      override:
+        default: true
+        description: 'The boolean of overrides to use'
+        required: false
+        type: boolean
+
+jobs:
+  clippy_check:
+    name: 'Clippy Check'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust-versions: ${{ fromJson(inputs.versions) }}
+        components: ${{ fromJson(inputs.components) }}
+        toolchain: ${{ fromJson(inputs.toolchain) }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: ${{ matrix.components }}
+          override: ${{ inputs.override }}
+
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features

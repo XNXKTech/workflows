@@ -1,0 +1,39 @@
+name: Rust fmt
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        default: "[\"stable\"]"
+        description: 'The version of rustfmt to use'
+        required: false
+        type: string
+      components:
+        default: "[\"rustfmt\"]"
+        required: false
+        type: string
+
+jobs:
+  fmt:
+    name: 'Formatting'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        rust-versions: ${{fromJson(inputs.versions)}}
+        components: ${{fromJson(inputs.components)}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Rust ${{ matrix.rust-version }}
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.versions }}
+          components: ${{ matrix.components }}
+
+      - name: Format
+        run: cargo fmt --all -- --check
