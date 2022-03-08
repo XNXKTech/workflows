@@ -1,0 +1,82 @@
+name: Lighthouse
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'Stringified JSON object listing target Node versions'
+        default: "[\"16\"]"
+        required: false
+        type: string
+      domain:
+        description: 'The domain to run the tests against'
+        required: true
+        type: string
+
+jobs:
+  build:
+
+    name: Lighthouse
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-versions: ${{fromJson(inputs.versions)}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Setup Nodejs with yarn caching
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+
+      - uses: actions/cache@v2.1.7
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn
+
+      - name: Install package.json dependencies with Yarn
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          HUSKY_SKIP_INSTALL: true
+
+      - name: Sleep for 30 seconds
+        uses: whatnick/wait-action@master
+        with:
+          time: '30s'
+
+      - name: Run Lighthouse
+        uses: foo-software/lighthouse-check-action@master
+        id: lighthouseCheck
+        with:
+          urls: 'https://deploy-preview-${{github.event.number}}--${{inputs.domain}}'
+
+      - name: Handle Lighthouse Check results
+        uses: foo-software/lighthouse-check-status-action@master
+        with:
+          lighthouseCheckResults: ${{ steps.lighthouseCheck.outputs.lighthouseCheckResults }}
+          minAccessibilityScore: "50"
+          minBestPracticesScore: "50"
+          minPerformanceScore: "50"
+          minProgressiveWebAppScore: "50"
+          minSeoScore: "50"
