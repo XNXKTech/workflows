@@ -46,6 +46,26 @@ The `CI_PAT` is the personal access token of the GitHub account.
 
 ## Laravel
 
+The `versions` and `stability` actually is sequence, to support strategy matrix needed by the workflow. if you don't need strategy matrix, you can use `"[\"8.0\"]"` or ignore `versions` and `stability`. it defaults to be the same as `"[\"8.0\"]"` and `"[\"prefer-stable\"]`.
+
+### Tests
+
+```yaml
+uses: XNXKTech/workflows/.github/workflows/laravel-test.yml@main
+with:
+  versions: "[\"8.0\", \"8.1\"]"
+  stability: "[\"prefer-lowest\", \"prefer-stable\"]"
+```
+
+### Insights
+
+```yaml
+uses: XNXKTech/workflows/.github/workflows/laravel-insights.yml@main
+with:
+  versions: "[\"8.0\", \"8.1\"]"
+  stability: "[\"prefer-lowest\", \"prefer-stable\"]"
+```
+
 ## ACME
 
 ## Cloudbase
