@@ -91,11 +91,11 @@ jobs:
         run: |
           cp .env.testing .env
           php artisan key:generate --ansi
+          php artisan config:clear
           php artisan config:cache
           php artisan migrate
           php artisan db:seed
           php artisan api:cache
-          php artisan config:cache
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
