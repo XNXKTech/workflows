@@ -20,6 +20,11 @@ on:
           php artisan config:cache
         required: false
         type: string
+      jwt:
+        description: 'Stringified JSON object listing JWT keys'
+        default: false
+        required: false
+        type: boolean
       database:
         description: 'Database to use for testing'
         default: 'postgres:12.4-alpine'
@@ -130,8 +135,17 @@ jobs:
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
+      - name: Prepare JWT keys
+        if: ${{ inputs.jwt }}
+        run: yes 2>/dev/null | php artisan jwt:secret
+
       - name: Prepare Laravel Application
         run: ${{ inputs.command }}
+
+      - name: Prepare JWT keys
+        if: ${{ inputs.jwt }}
+        run: yes 2>/dev/null | php artisan jwt:secret
+
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
