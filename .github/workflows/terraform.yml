@@ -7,6 +7,36 @@ on:
         default: "1.0"
         description: "Terraform version to use"
         required: true
+      wrapper:
+        default: false
+        description: "If will use Terraform wrapper"
+        required: false
+        type: boolean
+      fmt_command:
+        description: "Terraform fmt command"
+        default: "terraform fmt -check"
+        required: false
+        type: string
+      init_command:
+        description: "Terraform init command"
+        default: "terraform init"
+        required: false
+        type: string
+      validate_command:
+        description: "Terraform validate command"
+        default: "terraform validate -no-color"
+        required: false
+        type: string
+      wrk_dir:
+        description: "Working dir"
+        default: "./"
+        required: false
+        type: string
+      command_continue_on_error:
+        description: "If will continue on error"
+        default: false
+        required: false
+        type: boolean
       var:
         description: "Terraform variable to use"
         required: false
@@ -24,6 +54,9 @@ jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+
+    continue-on-error: ${{ inputs.command_continue_on_error }}
+
     strategy:
       matrix:
         versions: ${{ fromJson(inputs.versions) }}
@@ -35,19 +68,20 @@ jobs:
       - uses: hashicorp/setup-terraform@v1.3.2
         with:
           terraform_version: ${{ inputs.version }}
+          terraform_wrapper: ${{ inputs.wrapper }}
 
       - name: Terraform fmt
         id: fmt
-        run: terraform fmt
+        run: ${{ inputs.fmt_command }}
         continue-on-error: true
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: $${{ inputs.init_command }}
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate -no-color
+        run: ${{ inputs.validate_command }}
 
       - name: Terraform Plan
         id: plan
