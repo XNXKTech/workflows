@@ -25,6 +25,11 @@ on:
         default: false
         required: false
         type: boolean
+      need_env:
+        description: 'Stringified JSON object listing environment variables'
+        default: false
+        required: false
+        type: boolean
       database:
         description: 'Database to use for testing'
         default: 'postgres:12.4-alpine'
@@ -146,6 +151,9 @@ jobs:
         if: ${{ inputs.jwt }}
         run: yes 2>/dev/null | php artisan jwt:secret
 
+      - name: Look up .env file
+        if: ${{ inputs.need_env }}
+        run: cat .env
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
