@@ -9,6 +9,10 @@ on:
 
 jobs:
   auto-merge:
+    name: Auto Merge
+    permissions:
+      pull-requests: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
