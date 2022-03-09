@@ -6,11 +6,11 @@ on:
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: '[\"8.0\"]'
-        required: true
+        required: false
         type: string
       stability:
         default: '[\"prefer-stable\"]'
-        required: true
+        required: false
         type: string
       command:
         description: 'Command to prepare Laravel Application'
@@ -131,14 +131,7 @@ jobs:
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Prepare Laravel Application
-        run: |
-          cp .env.testing .env
-          php artisan key:generate --ansi
-          php artisan config:clear
-          php artisan config:cache
-          php artisan migrate
-          php artisan db:seed
-          php artisan api:cache
+        run: ${{ inputs.command }}
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
