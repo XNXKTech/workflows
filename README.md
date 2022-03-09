@@ -61,6 +61,23 @@ with:
   stability: "[\"prefer-lowest\", \"prefer-stable\"]"
 ```
 
+### Inputs
+
+| input              | required | default                                                                                       | description                                          |
+|--------------------|----------|-----------------------------------------------------------------------------------------------|------------------------------------------------------|
+| `versions`         | ❌        | `'[\"8.0\"]'`                                                                                 | Stringified JSON object listing target PHP versions  |
+| `stability`        | ❌        | `'[\"prefer-stable\"]'`                                                                       | Stringified JSON object listing target PHP stability |
+| `command`          | ❌        |                                                                                               | Command to prepare Laravel Application               |
+| `database`         | ❌        | `postgres:12.4-alpine`                                                                        | Database to use for testing                          |
+| `db_user`          | ❌        | `postgres`                                                                                    | Database user to use for testing                     |
+| `redis`            | ❌        | `redis:5.0-alpine`                                                                            | Redis to use for testing                             |
+| `extensions`       | ❌        | `dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp` | List of PHP extensions to install                    |
+| `coverage`         | ❌        | `xdebug`                                                                                      | Enable PHP code coverage                             |
+| `tools`            | ❌        | `php-cs-fixer, phpunit`                                                                       | List of tools to install                             |
+| `composer_version` | ❌        | `v2`                                                                                          | Version of Composer to use                           |
+
+
+
 ### Insights
 
 ```yaml
