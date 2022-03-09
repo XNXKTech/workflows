@@ -1,0 +1,82 @@
+name: Netlify Preview Deploy
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'Stringified JSON object listing target Node versions'
+        default: "[\"16\"]"
+        required: true
+        type: string
+      build_directory:
+        required: true
+        type: string
+      build_command:
+        required: false
+        type: string
+        default: 'yarn build'
+    secrets:
+      CI_PAT:
+        required: true
+      netlifyAuthToken:
+        required: true
+      netlifySiteId:
+        required: true
+
+jobs:
+  netlify:
+    name: ${{ matrix.node-versions }} Netlify Preview
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-versions: ${{fromJson(inputs.versions)}}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Setup Nodejs with yarn caching
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+
+      - uses: actions/cache@v2.1.7
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn
+
+      - name: Install package.json dependencies with Yarn
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          HUSKY_SKIP_INSTALL: true
+
+      - run: ${{inputs.build_command}}
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v1.2
+        with:
+          publish-dir: './output/dist'
+          github-token: ${{ secrets.CI_PAT }}
+          deploy-message: "Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.netlifyAuthToken }}
+          NETLIFY_SITE_ID: ${{ secrets.netlifySiteId }}
