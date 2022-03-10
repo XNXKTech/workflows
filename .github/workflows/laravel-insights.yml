@@ -5,11 +5,11 @@ on:
     inputs:
       versions:
         description: 'Stringified JSON object listing target PHP versions'
-        default: '[\"8.0\"]'
+        default: "[\"8.0\"]"
         required: true
         type: string
       stability:
-        default: '[\"prefer-stable\"]'
+        default: "[\"prefer-stable\"]"
         required: true
         type: string
       min_quality:
