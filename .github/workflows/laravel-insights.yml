@@ -6,27 +6,27 @@ on:
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: "[\"8.0\"]"
-        required: true
+        required: false
         type: string
       stability:
         default: "[\"prefer-stable\"]"
-        required: true
+        required: false
         type: string
       min_quality:
         default: 80
-        required: true
+        required: false
         type: number
       min_complexity:
         default: 80
-        required: true
+        required: false
         type: number
       min_architecture:
         default: 80
-        required: true
+        required: false
         type: number
       min_style:
         default: 80
-        required: true
+        required: false
         type: number
 
 jobs:
