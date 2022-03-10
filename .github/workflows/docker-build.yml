@@ -38,7 +38,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            ccr.ccs.tencentyun.com/${{ steps.reponame.outputs.lowercase }}
+            ${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}
           tags: |
             type=schedule
             type=ref,event=branch
