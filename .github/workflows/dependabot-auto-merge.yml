@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: patch
+      command:
+        description: The command to run.
+        type: string
+        required: false
+        default: squash and merge
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
@@ -22,4 +27,5 @@ jobs:
       - uses: ahmadnassri/action-dependabot-auto-merge@5d98f10d910782d0bb431fc03ae26532543ae184  # v2, as of 2021-11-26
         with:
           target: ${{ inputs.target }}
+          command: ${{ inputs.command }}
           github-token: ${{ secrets.GH_TOKEN }}
