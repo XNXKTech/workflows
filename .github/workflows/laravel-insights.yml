@@ -12,6 +12,22 @@ on:
         default: '[\"prefer-stable\"]'
         required: true
         type: string
+      min_quality:
+        default: 80
+        required: true
+        type: number
+      min_complexity:
+        default: 80
+        required: true
+        type: number
+      min_architecture:
+        default: 80
+        required: true
+        type: number
+      min_style:
+        default: 80
+        required: true
+        type: number
 
 jobs:
   ci:
@@ -79,4 +95,4 @@ jobs:
 
       - name: phpinsights
         run: |
-          vendor/bin/phpinsights -n --ansi --min-quality=80 --min-complexity=80 --min-architecture=80 --min-style=80 --format=github-action
+          vendor/bin/phpinsights -n --ansi --min-quality=${{ inputs.min_quality }} --min-complexity=${{ inputs.min_complexity }} --min-architecture=${{ inputs.min_architecture }} --min-style=${{ inputs.min_style }} --format=github-action
