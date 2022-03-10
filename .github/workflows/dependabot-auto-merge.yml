@@ -20,7 +20,7 @@ on:
 
 jobs:
   auto-merge:
-    name: Auto Merge
+    name: Dependabot
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
