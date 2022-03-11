@@ -19,9 +19,7 @@ on:
 jobs:
   Build:
     name: Image Build
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -32,28 +30,13 @@ jobs:
         uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ github.repository }}
-          
-      - name: images
-        id: images
-        if: ${{ inputs.registry }} == registry-1.docker.io
-        uses: ASzc/change-string-case-action@v2
-        with:
-          string: ${{ steps.reponame.outputs.lowercase }}
-          
-      - name: images
-        id: images
-        if: ${{ inputs.registry }} != registry-1.docker.io
-        uses: ASzc/change-string-case-action@v2
-        with:
-          string: ${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}
-      
-        
+           
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: |
-            ${{ steps.images.outputs.lowercase }}
+            ${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}
           tags: |
             type=schedule
             type=ref,event=branch
