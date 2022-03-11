@@ -29,9 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ahmadnassri/action-dependabot-auto-merge@5d98f10d910782d0bb431fc03ae26532543ae184  # v2, as of 2021-11-26
+      - uses: ahmadnassri/action-dependabot-auto-merge@5d98f10d910782d0bb431fc03ae26532543ae184
+        id: dependabot-auto-merge
         with:
           target: ${{ inputs.target }}
           command: ${{ inputs.command }}
           github-token: ${{ secrets.GH_TOKEN }}
           botName: ${{ inputs.botName }}
+
+      - name: Use GH for merge PR
+        if: success()
+        run: |
+          gh pr merge ${{ github.event.number }} --squash -d
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
