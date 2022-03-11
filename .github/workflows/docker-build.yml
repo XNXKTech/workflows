@@ -17,11 +17,10 @@ on:
         required: true
 
 jobs:
-  Build:
-    name: Image Build
-
+  TCR:
+    name: TCR Image Build
     runs-on: ubuntu-latest
-
+    if: ${{ inputs.registry }} != registry-1.docker.io
     steps:
       - uses: actions/checkout@v3
         with:
@@ -33,27 +32,73 @@ jobs:
         with:
           string: ${{ github.repository }}
           
-      - name: images
-        id: images
-        if: ${{ inputs.registry }} == registry-1.docker.io
-        uses: ASzc/change-string-case-action@v2
-        with:
-          string: ${{ steps.reponame.outputs.lowercase }}
-          
-      - name: images
-        id: images
-        if: ${{ inputs.registry }} != registry-1.docker.io
-        uses: ASzc/change-string-case-action@v2
-        with:
-          string: ${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}
-      
-        
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: |
-            ${{ steps.images.outputs.lowercase }}
+            ${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2.1.7
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+  Docker:
+    name: Docker Hub Image Build
+    runs-on: ubuntu-latest
+    if: ${{ inputs.registry }} == registry-1.docker.io
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup repo name to lowercase
+        id: reponame
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ github.repository }}
+          
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ${{ steps.reponame.outputs.lowercase }}
           tags: |
             type=schedule
             type=ref,event=branch
