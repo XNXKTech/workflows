@@ -13,6 +13,11 @@ on:
         type: string
         required: false
         default: squash and merge
+      botName:
+        description: The name of the bot.
+        type: string
+        required: false
+        default: starfire-bot
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
@@ -29,3 +34,4 @@ jobs:
           target: ${{ inputs.target }}
           command: ${{ inputs.command }}
           github-token: ${{ secrets.GH_TOKEN }}
+          botName: ${{ inputs.botName }}
