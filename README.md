@@ -23,6 +23,7 @@ Here are the reusable workflows used by all XNXK projects.
 - [ACME](#acme)
 - [Cloudbase](#cloudbase)
 - [Terraform](#terraform)
+- [Auto Merge](#auto-merge)
 
 ## PHP
 
@@ -76,8 +77,6 @@ with:
 | `tools`            | ❌        | `php-cs-fixer, phpunit`                                                                       | List of tools to install                             |
 | `composer_version` | ❌        | `v2`                                                                                          | Version of Composer to use                           |
 
-
-
 ### Insights
 
 ```yaml
@@ -92,6 +91,40 @@ with:
 ## Cloudbase
 
 ## Terraform
+
+## Auto Merge
+
+### Auto Rebase
+
+This workflow is used to rebase the pull request automatically.
+
+```yaml
+uses: XNXKTech/workflows/.github/workflows/auto-rebase.yml@main
+secrets:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Dependabot
+
+This workflow is used to automatically merge dependabot pull requests.
+
+The `DEPENDABOT_TOKEN` is dependabot token of the GitHub account. **It needs to be set in Dependabot secrets, not Actions secrets.**
+
+```yaml
+uses: XNXKTech/workflows/.github/workflows/dependabot-auto-merge.yml@main
+secrets:
+  GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+```
+
+| input     | required | default            | description                      |
+|-----------|----------|--------------------|----------------------------------|
+| `target`  | ❌        | `patch`            | The target branch to merge into. |
+| `command` | ❌        | `squash and merge` | The command to run.              |
+| `botName` | ❌        | `starfire-bot`     | The name of the bot.             |
+
+| input      | required | description           |
+|------------|----------|-----------------------|
+| `GH_TOKEN` | ✔        | The dependabot token. |
 
 ## License
 
