@@ -8,6 +8,17 @@ on:
         default: "[\"16\"]"
         required: false
         type: string
+      reviewers:
+        description: 'Stringified JSON object listing target reviewers'
+        default: "[\"XNXKTech/infra\"]"
+        required: false
+        type: string
+      labels:
+        description: 'Stringified JSON object listing target labels'
+        default: |
+          status/needs-review
+        required: false
+        type: string
 
 jobs:
   build:
@@ -69,9 +80,8 @@ jobs:
           title: "style: fix typo"
           branch-suffix: short-commit-hash
           branch: style-fix-typo
-          reviewers: UnionMusic/infra
-          labels: |
-            status/needs-review
+          reviewers: ${{ inputs.reviewers }}
+          labels: ${{ inputs.labels }}
           delete-branch: true
       - name: Check outputs
         run: |
