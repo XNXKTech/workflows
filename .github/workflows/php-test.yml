@@ -17,6 +17,11 @@ on:
         default: "[\"prefer-stable\"]"
         required: false
         type: string
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
       extensions:
         description: 'List of PHP extensions to install'
         default: 'dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp'
@@ -54,6 +59,8 @@ jobs:
         operating-system: ${{ fromJson(inputs.operating-system) }}
         php-versions: ${{ fromJson(inputs.versions) }}
         stability: ${{ fromJson(inputs.stability) }}
+
+      fail-fast: ${{ inputs.fail-fast }}
 
     steps:
       - uses: actions/checkout@v3
