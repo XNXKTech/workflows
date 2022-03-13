@@ -13,6 +13,11 @@ on:
         default: "[\"16\"]"
         required: true
         type: string
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -25,6 +30,8 @@ jobs:
       matrix:
         operating-system: ${{ fromJson(inputs.operating-system) }}
         node-versions: ${{fromJson(inputs.versions)}}
+
+      fail-fast: ${{ inputs.fail-fast }}
 
     steps:
       - uses: actions/checkout@v3
