@@ -1,0 +1,33 @@
+name: Auto rebase
+
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+jobs:
+  rebase:
+    name: Rebase
+
+    runs-on: ubuntu-latest
+
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@starfire-bot rebase') && github.event.comment.user.login != 'starfire-bot' && github.event.issue.state == 'open' && github.event.issue.locked == false
+
+    steps:
+      - name: Checkout the latest code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+      - name: Automatic Rebase
+        uses: cirrus-actions/rebase@1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Comment
+        run: |
+          gh pr comment ${{ github.event.issue.number }} --body "Rebase complete. Please review the PR."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
