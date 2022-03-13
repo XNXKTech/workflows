@@ -22,9 +22,13 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@${{ inputs.bot }} rebase')
+    if: github.event.issue.pull_request != '' && toJson(github.event.comment.body) == '"@${{ inputs.bot }} rebase"'
 
     steps:
+      - name: debug
+        if: toJson(github.event.comment.body) == "@${{ inputs.bot }} rebase"
+        run: |
+          echo "let's run ${{ toJson(github.event.comment.body) }}"
       - name: React to comment
         uses: dkershner6/reaction-action@v1
         with:
@@ -38,16 +42,17 @@ jobs:
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
 
       - name: Check issue state
-        if: github.event.issue.state != 'open' || github.event.issue.locked != false || github.event.issue.draft != false
+        if: github.event.issue.state != 'open' || github.event.issue.locked == true || github.event.issue.draft == true
         run: |
           gh run cancel ${{ github.run_id }}
           echo "::warning:: Rebase requested by ${{ github.event.comment.user.login }}, but issue state is not open or issue is locked or draft"
 
       - name: Automatic Rebase
+        if: github.event.issue.state == 'open' && github.event.issue.locked == false && github.event.issue.draft == false
         uses: cirrus-actions/rebase@1.5
 
       - name: Comment
         if: github.event.comment.user.login != ${{ inputs.bot }}
         run: |
-          gh pr comment ${{ github.event.issue.number }} --body "Rebase complete. Please review the PR."
+          gh pr comment ${{ github.event.issue.number }} --body "Complete."
           echo "::notice:: Rebase requested by ${{ inputs.bot }}, rebase complete."
