@@ -1,0 +1,60 @@
+name: Laravel Env
+description: "Create the Laravel .env file"
+
+on:
+  workflow_call:
+    inputs:
+      APP_NAME:
+        description: "Laravel App name"
+        default: "Laravel"
+        required: false
+        type: string
+      APP_ENV:
+        description: "Laravel Environment"
+        default: "production"
+        required: false
+        type: string
+      APP_DEBUG:
+        description: "Laravel Debug"
+        default: false
+        required: false
+        type: boolean
+      APP_URL:
+        description: "Laravel App URL"
+        default: "http://localhost"
+        required: false
+        type: string
+      LOG_CHANNEL:
+        description: "Laravel Log Channel"
+        default: "stack"
+        required: false
+        type: string
+      DB_CONNECTION:
+        description: "Laravel Database Connection"
+        default: "mysql"
+        required: false
+        type: string
+
+build:
+  name: ${{ matrix.node-versions }} Build
+
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: creating .env
+      run: |
+          cat << 'EOF' > .env
+          APP_NAME=${{ inputs.ignore-cache }}
+          APP_ENV=${{ inputs.APP_ENV }}
+          APP_DEBUG=${{ inputs.APP_DEBUG }}
+          APP_URL=${{ inputs.APP_URL }}
+          LOG_CHANNEL=${{ inputs.LOG_CHANNEL }}
+          DB_CONNECTION=${{ inputs.DB_CONNECTION }}
+          DB_HOST="localhost"
+          DB_PORT="3306"
+          DB_DATABASE="test"
+          DB_USERNAME="root"
+          DB_PASSWORD="root"
+          SENTRY_DNS=
+          EOF
+      shell: bash
