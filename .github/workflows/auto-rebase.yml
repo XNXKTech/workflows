@@ -2,10 +2,19 @@ name: Auto rebase
 
 on:
   workflow_call:
+    inputs:
+      bot:
+        default: starfire-bot
+        description: The bot to use for the rebase.
+        type: string
+        required: false
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
         required: true
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN }}
 
 jobs:
   rebase:
@@ -13,21 +22,32 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@starfire-bot rebase') && github.event.comment.user.login != 'starfire-bot' && github.event.issue.state == 'open' && github.event.issue.locked == false
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@${{ inputs.bot }} rebase')
 
     steps:
+      - name: React to comment
+        uses: dkershner6/reaction-action@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commentId: ${{ github.event.comment.id }}
+          reaction: "+1" # Optional, defaults to +1
+
       - name: Checkout the latest code
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+
+      - name: Check issue state
+        if: github.event.issue.state != 'open' || github.event.issue.locked != false || github.event.issue.draft != false
+        run: |
+          gh run cancel ${{ github.run_id }}
+          echo "::warning:: Rebase requested by ${{ github.event.comment.user.login }}, but issue state is not open or issue is locked or draft"
+
       - name: Automatic Rebase
         uses: cirrus-actions/rebase@1.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Comment
+        if: github.event.comment.user.login != ${{ inputs.bot }}
         run: |
           gh pr comment ${{ github.event.issue.number }} --body "Rebase complete. Please review the PR."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          echo "::notice:: Rebase requested by ${{ inputs.bot }}, rebase complete."
