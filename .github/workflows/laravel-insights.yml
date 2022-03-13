@@ -12,6 +12,39 @@ on:
         default: "[\"prefer-stable\"]"
         required: false
         type: string
+      command:
+        description: 'Command to prepare Laravel Application'
+        default: |
+          cp .env.testing .env
+          php artisan key:generate --ansi
+          php artisan config:cache
+        required: false
+        type: string
+      extensions:
+        description: 'List of PHP extensions to install'
+        default: 'dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp'
+        required: false
+        type: string
+      coverage:
+        description: 'Enable PHP code coverage'
+        default: 'xdebug'
+        required: false
+        type: string
+      tools:
+        description: 'List of tools to install'
+        default: 'php-cs-fixer, phpunit'
+        required: false
+        type: string
+      composer_version:
+        description: 'Version of Composer to use'
+        default: 'v2'
+        required: false
+        type: string
+      cache-key:
+        description: 'Cache key to use for caching'
+        default: 'cache-v1'
+        required: false
+        type: string
       min_quality:
         default: 80
         required: false
@@ -45,13 +78,28 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ inputs.extensions }}
+          key: ${{ inputs.cache-key }}
+
+      - name: Cache extensions
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
+
       - name: Setup PHP ${{ matrix.php-versions }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp
-          coverage: xdebug
-          tools: php-cs-fixer, phpunit, composer:v2
+          extensions: ${{ inputs.extensions }}
+          coverage: ${{ inputs.coverage }}
+          tools: ${{ inputs.tools }}, composer:${{ inputs.composer_version }}
 
       - name: Get composer cache directory
         id: composer-cache
@@ -88,10 +136,7 @@ jobs:
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Prepare Laravel Application
-        run: |
-          cp .env.testing .env
-          php artisan key:generate --ansi
-          php artisan config:cache
+        run: ${{ inputs.command }}
 
       - name: phpinsights
         run: |
