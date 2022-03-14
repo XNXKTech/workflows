@@ -1,0 +1,84 @@
+name: Docker image lint
+
+on:
+  workflow_call:
+    inputs:
+      reporter:
+        description: Reporter of reviewdog command
+        default: github-pr-review
+        type: string
+        required: true
+      flags:
+        description: Flags of reviewdog command
+        default: ''
+        type: string
+        required: false
+      ignore:
+        description: Ignore rules
+        default: ''
+        type: string
+        required: false
+      tool_name:
+        description: Name of tool
+        default: hadolint
+        type: string
+        required: false
+      exclude:
+        description: Exclude files
+        default: |
+          /vendor/*
+          /node_modules/*
+          Dockerfile.*
+        type: string
+        required: false
+      level:
+        description: "Report level for reviewdog [info,warning,error]"
+        default: warning
+        type: string
+        required: false
+      filter_mode:
+        description: |
+          Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
+          Default is added.
+        default: added
+        type: string
+        required: false
+      fail_on_error:
+        description: |
+          Exit code for reviewdog when errors are found [true,false]
+          Default is `false`.
+        default: false
+        type: boolean
+        required: false
+      reviewdog_flags:
+        description: Flags of reviewdog command
+        default: ''
+        type: string
+        required: false
+    secrets:
+      GH_TOKEN:
+        required: true
+
+jobs:
+  hadolint:
+    name: Hadolint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: hadolint
+        uses: reviewdog/action-hadolint@v1
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          reporter: ${{ inputs.reporter }}
+          hadolint_flags: ${{ inputs.flags }}
+          hadolint_ignore: ${{ inputs.ignore }}
+          tool_name: ${{ inputs.tool_name }}
+          exclude: ${{ inputs.exclude }}
+          level: ${{ inputs.level }}
+          filter_mode: ${{ inputs.filter_mode }}
+          fail_on_error: ${{ inputs.fail_on_error }}
+          reviewdog_flags: ${{ inputs.reviewdog_flags }}
