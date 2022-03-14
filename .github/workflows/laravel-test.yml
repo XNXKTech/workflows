@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       operating-system:
-        default: "[\"ubuntu-latest\"]"
+        default: "[\"self-hosted\"]"
         description: "Operating system to run tests on"
         required: false
         type: "string"
