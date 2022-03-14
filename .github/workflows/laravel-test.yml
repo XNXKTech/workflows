@@ -17,6 +17,11 @@ on:
         default: "[\"prefer-stable\"]"
         required: false
         type: string
+      fail-fast:
+        default: true
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
       command:
         description: 'Command to prepare Laravel Application'
         default: |
@@ -87,6 +92,8 @@ jobs:
         operating-system: ${{ fromJson(inputs.operating-system) }}
         php-versions: ${{ fromJson(inputs.versions) }}
         stability: ${{ fromJson(inputs.stability) }}
+
+      fail-fast: ${{ inputs.fail-fast }}
 
     services:
       database:
