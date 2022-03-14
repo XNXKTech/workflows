@@ -3,6 +3,11 @@ name: Laravel Tests with Pest
 on:
   workflow_call:
     inputs:
+      operating-system:
+        default: "[\"ubuntu-latest\"]"
+        description: "Operating system to run tests on"
+        required: false
+        type: "string"
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: "[\"8.0\"]"
@@ -73,14 +78,16 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.php-versions }} - ${{ matrix.stability }}
+    name: ${{ matrix.php-versions }} - ${{ matrix.operating-system }} - ${{ matrix.stability }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.operating-system }}
 
     strategy:
       matrix:
-        php-versions: ${{fromJson(inputs.versions)}}
-        stability: ${{fromJson(inputs.stability)}}
+        operating-system: ${{ fromJson(inputs.operating-system) }}
+        php-versions: ${{ fromJson(inputs.versions) }}
+        stability: ${{ fromJson(inputs.stability) }}
+
     services:
       database:
         image: ${{ inputs.database }}
