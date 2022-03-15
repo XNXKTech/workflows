@@ -3,11 +3,6 @@ name: PHP Tests with Pest
 on:
   workflow_call:
     inputs:
-      operating-system:
-        default: "[\"ubuntu-latest\"]"
-        description: "Operating system to run tests on"
-        required: false
-        type: "string"
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: "[\"8.0\"]"
@@ -50,15 +45,14 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.php-versions }} - ${{ matrix.operating-system }} - ${{ matrix.stability }}
+    name: ${{ matrix.php-versions }} - ${{ matrix.stability }}
 
-    runs-on: ${{ inputs.operating-system }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        operating-system: ${{ fromJson(inputs.operating-system) }}
-        php-versions: ${{ fromJson(inputs.versions) }}
-        stability: ${{ fromJson(inputs.stability) }}
+        php-versions: ${{fromJson(inputs.versions)}}
+        stability: ${{fromJson(inputs.stability)}}
 
       fail-fast: ${{ inputs.fail-fast }}
 
