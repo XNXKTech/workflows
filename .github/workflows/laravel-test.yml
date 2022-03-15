@@ -75,6 +75,11 @@ on:
         default: 'cache-v1'
         required: false
         type: string
+      pest_command:
+        description: 'Command to run Pest'
+        default: '--coverage-text --colors=always --coverage-html=coverage'
+        required: false
+        type: string
 
 jobs:
   ci:
@@ -181,4 +186,4 @@ jobs:
         run: cat .env
 
       - name: Run Testsuite
-        run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
+        run: XDEBUG_MODE=coverage vendor/bin/pest tests/ ${{ inputs.pest_command }}
