@@ -42,6 +42,12 @@ on:
         default: 'cache-v1'
         required: false
         type: string
+      env:
+        description: 'Environment variables to set'
+        default:
+          CI: true
+        required: false
+        type: string
 
 jobs:
   ci:
@@ -120,3 +126,5 @@ jobs:
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
+        env: |
+          ${{ inputs.env }}
