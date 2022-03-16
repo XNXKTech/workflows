@@ -44,6 +44,14 @@ jobs:
         run: |
           composer global require friendsofphp/php-cs-fixer --no-interaction --no-update
 
+      - name: Install PHPInsights
+        run: |
+          composer global require phpinsights/phpinsights --no-interaction --no-update
+
+      - name: PHPInsights
+        run: |
+          phpinsights --fix -n --ansi --format=github-action
+
       - name: PHP CS Fixer
         run: php-cs-fixer fix --config .php-cs-fixer.dist.php
 
