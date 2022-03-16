@@ -42,6 +42,18 @@ on:
         default: 'cache-v1'
         required: false
         type: string
+      env:
+        description: 'Environment variables to set'
+        default: false
+        required: false
+        type: boolean
+      command:
+        description: 'Command to run'
+        default: |
+          cp .env.testing .env
+          composer dump-autoload
+        required: false
+        type: string
 
 jobs:
   ci:
@@ -117,6 +129,10 @@ jobs:
           timeout_minutes: 5
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare for environment variables
+        if: ${{ inputs.env }}
+        run: ${{ inputs.command }}
 
       - name: Run Testsuite
         run: vendor/bin/pest tests/ --coverage-text --colors=always --coverage-html=coverage
