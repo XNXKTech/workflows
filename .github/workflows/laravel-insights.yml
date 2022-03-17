@@ -78,6 +78,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
       - name: Setup cache environment
         id: extcache
         uses: shivammathur/cache-extensions@v1
@@ -140,4 +144,4 @@ jobs:
 
       - name: phpinsights
         run: |
-          vendor/bin/phpinsights -n --ansi --min-quality=${{ inputs.min_quality }} --min-complexity=${{ inputs.min_complexity }} --min-architecture=${{ inputs.min_architecture }} --min-style=${{ inputs.min_style }} --format=github-action
+          php artisan insights --no-interaction --min-quality=${{ inputs.min_quality }} --min-complexity=${{ inputs.min_complexity }} --min-architecture=${{ inputs.min_architecture }} --min-style=${{ inputs.min_style }} --format=github-action
