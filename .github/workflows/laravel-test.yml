@@ -77,9 +77,17 @@ on:
         type: string
       pest_command:
         description: 'Command to run Pest'
-        default: '--coverage-text --colors=always --coverage-html=coverage'
+        default: '--coverage-text --colors=always --coverage-html=coverage --coverage-clover coverage.xml'
         required: false
         type: string
+      codecov:
+        description: 'Enable CodeCov'
+        default: false
+        required: false
+        type: boolean
+    secrets:
+      codecov_token:
+        required: false
 
 jobs:
   ci:
@@ -187,3 +195,9 @@ jobs:
 
       - name: Run Testsuite
         run: XDEBUG_MODE=coverage vendor/bin/pest tests/ ${{ inputs.pest_command }}
+
+      - name: Upload coverage to Codecov
+        if: ${{ inputs.coverage }}
+        uses: codecov/codecov-action@v2
+        with:
+            token: ${{ secrets.codecov_token }}
