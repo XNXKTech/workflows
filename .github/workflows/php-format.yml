@@ -59,7 +59,7 @@ jobs:
           branch: style-fix-typo
           reviewers: XNXKTech/infra
           labels: |
-            status/needs-review
+            status/need-review
           delete-branch: true
       - name: Check outputs
         run: |
