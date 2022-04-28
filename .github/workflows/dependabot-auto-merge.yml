@@ -28,6 +28,7 @@ jobs:
     name: Dependabot
     runs-on: ubuntu-latest
     if: ${{ github.actor == 'dependabot[bot]' }} && toJson(github.event.comment.body) == '"@${{ inputs.botName }} ${{ inputs.command }}"'
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - uses: ahmadnassri/action-dependabot-auto-merge@5d98f10d910782d0bb431fc03ae26532543ae184
