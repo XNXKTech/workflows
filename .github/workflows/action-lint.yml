@@ -1,0 +1,19 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - '**/*.yml'
+  workflow_dispatch:
+
+jobs:
+  actionlint:
+    name: Actions
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - uses: reviewdog/action-actionlint@v1
