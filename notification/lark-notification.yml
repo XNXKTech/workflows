@@ -1,0 +1,107 @@
+name: Notification
+
+on:
+  workflow_call:
+    inputs:
+      stage:
+        required: true
+        description: The stage of the workflow.
+        default: "Staging"
+        type: string
+      version:
+        required: false
+        description: The version of the workflow.
+        default: "1.0.0"
+        type: string
+      owner:
+        required: false
+        description: The owner of the repository.
+        default: "XNXKTech"
+        type: string
+      repo:
+        required: false
+        description: The name of the repository.
+        default: "workflows"
+        type: string
+  secrets:
+    CI_PAT:
+      required: false
+    LARK_WEBHOOK_URL:
+      required: true
+
+jobs:
+  notification:
+    name: Lark
+
+    runs-on: ubuntu-latest
+
+    permissions: read-all
+
+    steps:
+      - name: formal deployment feisu notification
+        run: |
+          curl '${{ secrets.LARK_WEBHOOK_URL }}' \
+             -H 'Content-Type: application/json' \
+              -d '
+              {
+                "msg_type": "interactive",
+                "card": {
+                  "config": {
+                    "wide_screen_mode": true
+                },
+                "header": {
+                  "template": "green",
+                  "title": {
+                    "content": "✅  Production Deployment for ${{ github.repository }} ready!",
+                    "tag": "plain_text"
+                  }
+                },
+                "elements": [
+                  {
+                    "fields": [
+                      {
+                        "is_short": true,
+                        "text": {
+                          "content": "**👤  提交者：**\n${{ github.actor }}",
+                          "tag": "lark_md"
+                        }
+                      },
+                      {
+                        "is_short": true,
+                        "text": {
+                          "content": "**🚧  Stage：**\n[production](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})",
+                          "tag": "lark_md"
+                        }
+                      }
+                    ],
+                    "tag": "div"
+                  },
+                  {
+                    "fields": [
+                      {
+                        "is_short": true,
+                        "text": {
+                          "content": "**🔨  Latest commit：**\n[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
+                          "tag": "lark_md"
+                        }
+                      },
+                      {
+                        "is_short": true,
+                        "text": {
+                          "content": "**🔍  Latest deploy log：**\n[${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                          "tag": "lark_md"
+                        }
+                      }
+                    ],
+                    "tag": "div"
+                  },
+                  {
+                    "tag": "hr"
+                  },
+                  {
+                    "tag": "markdown",
+                    "content": "**服务开始滚动更新，预计几分钟后生效。**\n\n本次变更内容如下：\n\n${{ fromJson(steps.get_release_notes.outputs.data).body }}"
+                  }
+                ]
+               }
+              }'
