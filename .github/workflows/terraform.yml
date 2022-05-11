@@ -8,7 +8,7 @@ on:
         description: "The number of minutes to wait for the operation to complete."
         required: false
         type: number
-      versions:
+      version:
         default: "1.0"
         description: "Terraform version to use"
         required: false
@@ -57,23 +57,15 @@ on:
       IAC_TOKEN:
         required: true
 
-defaults:
-  run:
-    shell: bash
-    working-directory: ${{ inputs.work_dir }}
-
 jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
 
-    timeout-minutes: ${{ inputs.timeout }}
-
-    continue-on-error: ${{ inputs.command_continue_on_error }}
-
-    strategy:
-      matrix:
-        versions: ${{ fromJson(inputs.versions) }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.work_dir }}
 
     steps:
       - name: Checkout
@@ -96,11 +88,11 @@ jobs:
       - name: Terraform fmt
         id: fmt
         run: ${{ inputs.fmt_command }}
-        continue-on-error: ${{ inputs.command_continue_on_error }}
+        continue-on-error: true
 
       - name: Terraform Init
         id: init
-        run: $${{ inputs.init_command }}
+        run: ${{ inputs.init_command }}
 
       - name: Terraform Validate
         id: validate
@@ -108,8 +100,8 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan ${{ inputs.var }} -no-color
-        continue-on-error: ${{ inputs.command_continue_on_error }}
+        run: ${{ inputs.plan_command }}
+        continue-on-error: true
 
       - name: Update Pull Request
         uses: actions/github-script@v5
