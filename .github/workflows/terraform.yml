@@ -3,10 +3,14 @@ name: Terraform
 on:
   workflow_call:
     inputs:
-      version:
+      timeout:
+        default: "10"
+        description: "The number of minutes to wait for the operation to complete."
+        required: false
+      versions:
         default: "1.0"
         description: "Terraform version to use"
-        required: true
+        required: false
       wrapper:
         default: false
         description: "If will use Terraform wrapper"
@@ -19,7 +23,7 @@ on:
         type: string
       init_command:
         description: "Terraform init command"
-        default: "terraform init"
+        default: "terraform init -input=false"
         required: false
         type: string
       validate_command:
@@ -27,33 +31,41 @@ on:
         default: "terraform validate -no-color"
         required: false
         type: string
-      wrk_dir:
+      plan_command:
+        description: "Terraform plan command"
+        default: "terraform plan -no-color -input=false"
+        required: false
+        type: string
+      apply_command:
+        description: "Terraform apply command"
+        default: "terraform apply -auto-approve -no-color -input=false"
+        required: false
+        type: string
+      work_dir:
         description: "Working dir"
         default: "./"
         required: false
         type: string
       command_continue_on_error:
         description: "If will continue on error"
-        default: false
+        default: true
         required: false
         type: boolean
-      var:
-        description: "Terraform variable to use"
-        required: false
     secrets:
-      CI_PAT:
-        required: true
       IAC_TOKEN:
         required: true
 
 defaults:
   run:
     shell: bash
+    working-directory: ${{ inputs.work_dir }}
 
 jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+
+    timeout-minutes: ${{ inputs.timeout }}
 
     continue-on-error: ${{ inputs.command_continue_on_error }}
 
@@ -70,10 +82,19 @@ jobs:
           terraform_version: ${{ inputs.version }}
           terraform_wrapper: ${{ inputs.wrapper }}
 
+      - name: Create Terraform Plugin Cache Dir
+        run: mkdir --parents ${{ github.workspace }}/.terraform.d/plugin-cache
+
+      - name: Cache Terraform dependencies
+        uses: actions/cache@v3.0.2
+        with:
+          path: ${{ github.workspace }}/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
       - name: Terraform fmt
         id: fmt
         run: ${{ inputs.fmt_command }}
-        continue-on-error: true
+        continue-on-error: ${{ inputs.command_continue_on_error }}
 
       - name: Terraform Init
         id: init
@@ -86,7 +107,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: terraform plan ${{ inputs.var }} -no-color
-        continue-on-error: true
+        continue-on-error: ${{ inputs.command_continue_on_error }}
 
       - name: Update Pull Request
         uses: actions/github-script@v5
@@ -94,7 +115,7 @@ jobs:
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
-          github-token: ${{ secrets.CI_PAT }}
+          github-token: ${{ secrets.IAC_TOKEN }}
           script: |
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
@@ -121,6 +142,6 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' && github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         id: apply
-        run: terraform apply ${{ inputs.var }} -auto-approve -no-color
+        run: ${{ inputs.apply_command }}
