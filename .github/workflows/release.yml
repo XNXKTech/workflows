@@ -50,6 +50,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.4.0
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Semantic Release
@@ -59,6 +60,7 @@ jobs:
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
+            conventional-changelog-conventionalcommits
         env:
           GITHUB_TOKEN: ${{ secrets.CI_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
