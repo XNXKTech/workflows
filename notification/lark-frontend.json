@@ -5,7 +5,7 @@
   "header": {
     "template": "green",
     "title": {
-      "content": "✅  Production Deployment for ${{ github.repository }} ready!",
+      "content": "✅  Production Deployment for $GITHUB_REPOSITORY ready!",
       "tag": "plain_text"
     }
   },
@@ -15,14 +15,14 @@
         {
           "is_short": true,
           "text": {
-            "content": "**👤  提交者：**\n${{ github.actor }}",
+            "content": "**👤  提交者：**\n$GITHUB_ACTOR",
             "tag": "lark_md"
           }
         },
         {
           "is_short": true,
           "text": {
-            "content": "**🚧  Stage：**\n[production](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})",
+            "content": "**🚧  Stage：**\n[production](https://github.com/$GITHUB_REPOSITORY/pull/$GITHUB_EVENT_NUM)",
             "tag": "lark_md"
           }
         }
@@ -34,14 +34,14 @@
         {
           "is_short": true,
           "text": {
-            "content": "**🔨  Latest commit：**\n[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
+            "content": "**🔨  Latest commit：**\n[$GITHUB_SHA](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)",
             "tag": "lark_md"
           }
         },
         {
           "is_short": true,
           "text": {
-            "content": "**🔍  Latest deploy log：**\n[${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+            "content": "**🔍  Latest deploy log：**\n[$GITHUB_RUN_ID](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)",
             "tag": "lark_md"
           }
         }
@@ -53,7 +53,7 @@
     },
     {
       "tag": "markdown",
-      "content": "**版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。**\n\n本次变更内容如下：\n\n${{ fromJson(steps.get_release_notes.outputs.data).body }}"
+      "content": "**版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。**\n\n本次变更内容如下：\n\n$RELEASE_NOTES"
     }
   ]
 }
