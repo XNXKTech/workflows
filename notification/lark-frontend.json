@@ -1,59 +1,62 @@
 {
-  "config": {
-    "wide_screen_mode": true
-  },
-  "header": {
-    "template": "green",
-    "title": {
-      "content": "✅  Production Deployment for ${{ github.repository }} ready!",
-      "tag": "plain_text"
-    }
-  },
-  "elements": [
-    {
-      "fields": [
-        {
-          "is_short": true,
-          "text": {
-            "content": "**👤  提交者：**\n${{ github.actor }}",
-            "tag": "lark_md"
-          }
-        },
-        {
-          "is_short": true,
-          "text": {
-            "content": "**🚧  Stage：**\n[production](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})",
-            "tag": "lark_md"
-          }
-        }
-      ],
-      "tag": "div"
+  "msg_type": "interactive",
+  "card": {
+    "config": {
+      "wide_screen_mode": true
     },
-    {
-      "fields": [
-        {
-          "is_short": true,
-          "text": {
-            "content": "**🔨  Latest commit：**\n[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
-            "tag": "lark_md"
-          }
-        },
-        {
-          "is_short": true,
-          "text": {
-            "content": "**🔍  Latest deploy log：**\n[${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
-            "tag": "lark_md"
-          }
-        }
-      ],
-      "tag": "div"
+    "header": {
+      "template": "green",
+      "title": {
+        "content": "✅  Production Deployment for ${{ github.repository }} ready!",
+        "tag": "plain_text"
+      }
     },
-    {
-      "tag": "hr"
-    },
-    {
-      "tag": "markdown",
-      "content": "**版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。**\n\n本次变更内容如下：\n\n${{ fromJson(steps.get_release_notes.outputs.data).body }}"
-    }
-  ]
+    "elements": [
+      {
+        "fields": [
+          {
+            "is_short": true,
+            "text": {
+              "content": "**👤  提交者：**\n${{ github.actor }}",
+              "tag": "lark_md"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "content": "**🚧  Stage：**\n[production](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})",
+              "tag": "lark_md"
+            }
+          }
+        ],
+        "tag": "div"
+      },
+      {
+        "fields": [
+          {
+            "is_short": true,
+            "text": {
+              "content": "**🔨  Latest commit：**\n[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
+              "tag": "lark_md"
+            }
+          },
+          {
+            "is_short": true,
+            "text": {
+              "content": "**🔍  Latest deploy log：**\n[${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+              "tag": "lark_md"
+            }
+          }
+        ],
+        "tag": "div"
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "markdown",
+        "content": "**版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。**\n\n本次变更内容如下：\n\n${{ fromJson(steps.get_release_notes.outputs.data).body }}"
+      }
+    ]
+  }
 }
