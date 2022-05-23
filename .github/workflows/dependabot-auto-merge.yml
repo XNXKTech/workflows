@@ -31,7 +31,7 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
-      - uses: ahmadnassri/action-dependabot-auto-merge@5d98f10d910782d0bb431fc03ae26532543ae184
+      - uses: ahmadnassri/action-dependabot-auto-merge@v2
         id: dependabot-auto-merge
         with:
           target: ${{ inputs.target }}
