@@ -19,6 +19,8 @@ on:
         required: false
         type: string
     secrets:
+      SERVER_USER:
+        required: true
       DNSAPI:
         required: true
       CI_PAT:
@@ -26,9 +28,9 @@ on:
       SERVER_USER:
         required: true
       EAB_KID:
-        required: true
+        required: false
       EAB_HMAC_KEY:
-        required: true
+        required: false
 env:
   ACME: /home/${{ secrets.SERVER_USER }}/.acme.sh/acme.sh
   DNSAPI: ${{ secrets.DNSAPI }}
@@ -62,11 +64,11 @@ jobs:
     - name: Install & Configure ACME.SH
       if: steps.acme-cache.outputs.cache-hit != 'true'
       run: |
-        echo "$DNSAPI" >> /home/${{ secrets.SERVER_USER }}/.acme.sh/account.conf
+        echo "${{ secrets.DNSAPI }}" >> /home/${{ secrets.SERVER_USER }}/.acme.sh/account.conf
         curl https://get.acme.sh | sh
 
     - name: Setup ZeroSSL
-      if: steps.acme-cache.outputs.cache-hit != 'true' && env.CA == 'zerossl'
+      if: steps.acme-cache.outputs.cache-hit != 'true' && inputs.CA == 'zerossl'
       run: |
         $ACME --register-account --server zerossl --eab-kid ${{ secrets.EAB_KID }} --eab-hmac-key ${{ secrets.EAB_HMAC_KEY }}
         $ACME --set-default-ca --server zerossl
