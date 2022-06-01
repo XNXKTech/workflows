@@ -73,7 +73,7 @@ jobs:
       - name: Create Pull Request
         if: ${{ always() }}
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.CI_PAT }}
           commit-message: "style: fix typo"
