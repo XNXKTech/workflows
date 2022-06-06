@@ -1,0 +1,90 @@
+name: PR Review
+
+on:
+  workflow_call:
+    inputs:
+      deployment:
+        default: pr.yml
+        description: The deployment file to use for the PR review.
+        type: string
+        required: false
+      environment:
+        default: PR Review
+        description: The environment to use for the PR review.
+        type: string
+        required: false
+      environment_url:
+        default: https://pr-review.example.com
+        description: The URL to use for the PR review.
+        type: string
+        required: false
+    secrets:
+      K8S_CONFIG:
+        required: true
+      IAC_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy
+    if: ${{ github.event_name == 'pull_request' }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Update instead of prid
+        id: prid
+        run: sed -i 's/{prid}/${{ github.event.number }}/g' ${{ inputs.deployment }}
+
+      - name: Deploy Environment
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify apply -f ${{ inputs.deployment }}
+
+      - name: Post comment to Pull Request
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.IAC_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const botComment = comments.find(comment => {
+              return comment.body.includes('✅ Pull Request Deployment')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `✅ Pull Request Deployment for ${{ github.repository }} ready!
+            #### 🔨 Latest commit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            #### 🔍 Latest deploy log: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            #### 😎 Deploy Preview API [https://drm-api-pr-${{ github.event.number }}.virtualstarry.com](https://drm-api-pr-${{ github.event.number }}.virtualstarry.com)`
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
