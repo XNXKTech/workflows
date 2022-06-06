@@ -6,3 +6,17 @@ updates:
       interval: "daily"
     labels :
       - "type/dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "deploy"
+    schedule:
+      interval: "daily"
+    labels :
+      - "type/dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "notification"
+    schedule:
+      interval: "daily"
+    labels :
+      - "type/dependencies"
