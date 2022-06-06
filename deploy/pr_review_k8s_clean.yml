@@ -1,0 +1,33 @@
+name: PR Review
+
+on:
+  workflow_call:
+    inputs:
+      deployment:
+        default: pr.yml
+        description: The deployment file to use for the PR review.
+        type: string
+        required: false
+    secrets:
+      K8S_CONFIG:
+        required: true
+
+jobs:
+  cleanup:
+    name: Cleanup
+    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.closed == true }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Replace PR ID of deployment
+        run: sed -i 's/{prid}/${{ github.event.number }}/g' ${{ inputs.deployment }}
+
+      - name: Cleanup Environment
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify delete -f ${{ inputs.deployment }}
