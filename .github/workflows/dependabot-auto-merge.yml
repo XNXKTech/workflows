@@ -40,6 +40,7 @@ jobs:
           botName: ${{ inputs.botName }}
 
       - name: Use GH for merge PR
+        continue-on-error: true
         if: success()
         run: |
           gh pr merge ${{ github.event.number }} --squash -d
