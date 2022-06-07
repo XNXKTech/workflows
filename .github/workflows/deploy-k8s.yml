@@ -1,0 +1,72 @@
+name: Deployment
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        default: xnxktech.tencentcloudcr.com
+        type: string
+        required: false
+      environment:
+        default: Production
+        description: The environment to use for the Production.
+        type: string
+        required: false
+      environment_url:
+        default: https://prod.example.com
+        description: The URL to use for the Production.
+        type: string
+        required: false
+    secrets:
+      K8S_CONFIG:
+        required: true
+      IAC_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    name: Kubernetes
+    if: ${{ github.event_name != 'pull_request' }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Split Version or Branch
+        uses: jungwinter/split@v2
+        id: split
+        with:
+          separator: '/'
+          msg: ${{ github.ref }}
+
+      - name: Checkout ${{ steps.split.outputs._2 }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.split.outputs._2 }}
+
+      - name: Setup repo name to lowercase
+        id: reponame
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ github.repository }}
+
+      - name: Split repo name
+        uses: jungwinter/split@v2
+        id: split_reponame
+        with:
+          separator: '/'
+          msg: ${{ steps.reponame.outputs.lowercase }}
+
+      - name: Setup Deployments to Production
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.REGISTRY }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }}
+
+      - name: Restart Deployment
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify rollout restart deployment/${{ steps.split_reponame.outputs._1 }}
