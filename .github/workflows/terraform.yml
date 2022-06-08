@@ -3,71 +3,133 @@ name: Terraform
 on:
   workflow_call:
     inputs:
+      env:
+        description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
+        type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
+        default: ''
+        required: false
       timeout:
         default: 10
-        description: "The number of minutes to wait for the operation to complete."
+        description: The number of minutes to wait for the operation to complete.
         required: false
         type: number
       version:
-        default: "1.0"
-        description: "Terraform version to use"
+        default: "1.1"
+        description: Terraform version to use
         required: false
         type: string
       wrapper:
-        default: false
-        description: "If will use Terraform wrapper"
-        required: false
-        type: boolean
-      fmt_command:
-        description: "Terraform fmt command"
-        default: "terraform fmt -check"
+        default: true
+        description: If will use Terraform wrapper
         required: false
         type: string
-      init_command:
-        description: "Terraform init command"
-        default: "terraform init -input=false"
+      fmt_args:
+        description: Terraform fmt command arguments
+        default: "-check"
         required: false
         type: string
-      validate_command:
-        description: "Terraform validate command"
-        default: "terraform validate -no-color"
+      init_args:
+        description: Terraform init command arguments
+        default: "-input=false"
         required: false
         type: string
-      plan_command:
-        description: "Terraform plan command"
-        default: "terraform plan -no-color -input=false"
+      validate_args:
+        description: Terraform validate command arguments
+        default: "-no-color"
         required: false
         type: string
-      apply_command:
-        description: "Terraform apply command"
-        default: "terraform apply -auto-approve -no-color -input=false"
+      plan_args:
+        description: Terraform plan command arguments
+        default: "-no-color -input=false -lock=false"
         required: false
         type: string
-      work_dir:
-        description: "Working dir"
-        default: "./"
+      apply_args:
+        description: Terraform apply command arguments
+        default: "-auto-approve -no-color -input=false"
+        required: false
+        type: string
+      terraform_root:
+        description: Folder containing all terraform resources, used to shorten terraform directory names
+        required: false
+        default: "."
+        type: string
+      directory:
+        description: List of directories containing terraform configurations relative to terraform_root. Must be a string. Example "['dev', 'prod']"
+        default: "['.']"
         required: false
         type: string
       command_continue_on_error:
-        description: "If will continue on error"
+        description: If will continue on error
         default: true
         required: false
         type: boolean
+      debug:
+        description: Debug Mode, true or false
+        type: string
+        required: false
+        default: false
+
     secrets:
-      IAC_TOKEN:
-        required: true
+      GH_TOKEN:
+        required: false
+      TENCENTCLOUD_SECRET_ID:
+        required: false
+      TENCENTCLOUD_SECRET_KEY:
+        required: false
+      ALICLOUD_ACCESS_KEY:
+        required: false
+      ALICLOUD_SECRET_KEY:
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash -euxo pipefail {0}
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  TF_CLI_ARGS_fmt: ${{ inputs.fmt_args }}
+  TF_CLI_ARGS_init: ${{ inputs.init_args }}
+  TF_CLI_ARGS_validate: ${{ inputs.validate_args }}
+  TF_CLI_ARGS_plan: ${{ inputs.plan_args }}
+  TF_CLI_ARGS_apply: ${{ inputs.apply_args }}
+  TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+  TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+  ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
+  ALICLOUD_SECRET_KEY: ${{ secrets.ALICLOUD_SECRET_KEY }}
+  ENV: ${{ inputs.env }}
+  DEBUG: ${{ inputs.debug == 'true' || '' }}
 
 jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}
+
+    strategy:
+      matrix:
+        directory: ${{ fromJSON(inputs.directory) }}
+
+    outputs:
+      plan: ${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr}}
+      outcome: ${{ steps.plan.outcome }}
 
     defaults:
       run:
         shell: bash
-        working-directory: ${{ inputs.work_dir }}
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.directory }}
+      cancel-in-progress: false  # don't interrupt Terraform runs, you may end up with stale locks
 
     steps:
+      - name: Setup environment variables
+        run: |
+          echo "${{ env.ENV }}" >> "$GITHUB_ENV"
+
       - name: Checkout
         uses: actions/checkout@v3.0.2
 
@@ -85,33 +147,52 @@ jobs:
           path: ${{ github.workspace }}/.terraform.d/plugin-cache
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
 
-      - name: Terraform fmt
+      - name: Fmt
         id: fmt
-        run: ${{ inputs.fmt_command }}
-        continue-on-error: true
+        continue-on-error: ${{ inputs.command_continue_on_error }}
+        working-directory: ${{ inputs.terraform_root }}/${{ matrix.directory }}
+        run: terraform fmt
 
-      - name: Terraform Init
+      - name: Init
         id: init
-        run: ${{ inputs.init_command }}
+        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} init
 
-      - name: Terraform Validate
+      - name: Validate
         id: validate
-        run: ${{ inputs.validate_command }}
+        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} validate
 
-      - name: Terraform Plan
+      - name: Plan
         id: plan
-        run: ${{ inputs.plan_command }}
-        continue-on-error: true
+        continue-on-error: ${{ inputs.command_continue_on_error }}
+        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} plan
 
       - name: Update Pull Request
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+          PLAN: |
+            terraform
+            ${{ steps.plan.outputs.stderr }}
+            ${{ steps.plan.outputs.stdout }}
         with:
-          github-token: ${{ secrets.IAC_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            emoji = ("${{ steps.plan.outcome }}" === "success") ? '✅' : '❌'
+
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const botComment = comments.find(comment => {
+              return comment.body.includes('${{ github.workflow }} - ${{ matrix.directory }}')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### ${emoji} ${{ github.workflow }} - ${{ matrix.directory }}
+            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
@@ -120,22 +201,30 @@ jobs:
 
             \`\`\`${process.env.PLAN}\`\`\`
 
-            </details>
+            </details>`;
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.action_path }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-
-      - name: Terraform Plan Status
+      - name: Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-      - name: Terraform Apply
+      - name: Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         id: apply
-        run: ${{ inputs.apply_command }}
+        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} apply
