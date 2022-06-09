@@ -1,0 +1,132 @@
+name: Laravel Artisan
+
+on:
+  workflow_call:
+    inputs:
+      env_file:
+        description: The path to the .env file.
+        default: .env.testing
+        required: true
+        type: string
+      versions:
+        description: Stringified JSON object listing target PHP versions
+        default: "['8.0']"
+        required: false
+        type: string
+      stability:
+        default: "['prefer-stable']"
+        required: false
+        type: string
+      command:
+        description: Command to prepare Laravel Application
+        default: |
+          php artisan -V
+        required: false
+        type: string
+      extensions:
+        description: List of PHP extensions to install
+        default: 'dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp'
+        required: false
+        type: string
+      coverage:
+        description: Enable PHP code coverage
+        default: 'xdebug'
+        required: false
+        type: string
+      tools:
+        description: List of tools to install
+        default: 'php-cs-fixer, phpunit'
+        required: false
+        type: string
+      composer_version:
+        description: Version of Composer to use
+        default: 'v2'
+        required: false
+        type: string
+      cache-key:
+        description: Cache key to use for caching
+        default: 'cache-v1'
+        required: false
+        type: string
+
+jobs:
+  artisan:
+    name: ${{ matrix.php-versions }} - ${{ matrix.stability }}
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-versions: ${{fromJson(inputs.versions)}}
+        stability: ${{fromJson(inputs.stability)}}
+
+    steps:
+      - uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ inputs.extensions }}
+          key: ${{ inputs.cache-key }}
+
+      - name: Cache extensions
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
+
+      - name: Setup PHP ${{ matrix.php-versions }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ inputs.extensions }}
+          coverage: ${{ inputs.coverage }}
+          tools: ${{ inputs.tools }}, composer:${{ inputs.composer_version }}
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v3.0.4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Set Minimum PHP 8.0 Versions
+        uses: nick-invision/retry@v2.7.0
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer require guzzlehttp/guzzle:^7.2 --no-interaction --no-update
+        if: matrix.php-versions >= 8
+
+      - name: Set Minimum PHP 8.1 Versions
+        uses: nick-invision/retry@v2.7.0
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer require symfony/symfony:5.4.x-dev league/commonmark:^2.0.2 phpunit/phpunit:^9.5.8 --no-interaction --no-update
+        if: matrix.php-versions >= 8.1
+
+      - name: Install dependencies
+        uses: nick-invision/retry@v2.7.0
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare Laravel Application
+        run: |
+          cp ${{ inputs.env_file }} .env
+          php artisan key:generate --ansi
+          php artisan config:cache
+
+      - name: Artisan Command
+        run: ${{ inputs.command }}
