@@ -149,6 +149,7 @@ jobs:
 
       - name: Fmt
         id: fmt
+        if: github.event_name == 'pull_request'
         continue-on-error: ${{ inputs.command_continue_on_error }}
         working-directory: ${{ inputs.terraform_root }}/${{ matrix.directory }}
         run: terraform fmt
@@ -159,6 +160,7 @@ jobs:
 
       - name: Validate
         id: validate
+        if: github.event_name == 'pull_request'
         run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} validate
 
       - name: Plan
