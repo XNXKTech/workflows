@@ -8,6 +8,9 @@ on:
         description: 'Docker registry'
         required: false
         type: string
+      context:
+        type: string
+        default: .
       debug:
         type: string
         required: false
@@ -101,7 +104,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.context }}
           platforms: ${{ inputs.platforms }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
