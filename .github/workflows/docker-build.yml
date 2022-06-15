@@ -24,6 +24,10 @@ on:
         required: true
       PASSWORD:
         required: true
+      TCR_USERNAME:
+        required: false
+      TCR_PASSWORD:
+        required: false
       DOCKERHUB_USERNAME:
         required: false
       DOCKERHUB_PASSWORD:
@@ -34,6 +38,10 @@ defaults:
     shell: bash -euxo pipefail {0}
 
 env:
+  TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+  TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   DEBUG: ${{ inputs.debug == 'true' || github.event.inputs.debug == 'true' || '' }}
 
 jobs:
