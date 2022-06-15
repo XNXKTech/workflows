@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       registry:
-        default: 'registry.xnxk.dev'
+        default: ''
         description: 'Docker registry'
         required: false
         type: string
