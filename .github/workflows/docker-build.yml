@@ -12,6 +12,10 @@ on:
         type: string
         required: false
         default: false
+      platforms:
+        type: string
+        required: false
+        default: linux/amd64
     secrets:
       USERNAME:
         required: true
@@ -98,7 +102,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          platforms: linux/amd64
+          platforms: ${{ inputs.platforms }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
