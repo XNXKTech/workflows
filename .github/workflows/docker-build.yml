@@ -21,9 +21,9 @@ on:
         default: linux/amd64
     secrets:
       USERNAME:
-        required: true
+        required: false
       PASSWORD:
-        required: true
+        required: false
       TCR_USERNAME:
         required: false
       TCR_PASSWORD:
