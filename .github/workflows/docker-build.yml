@@ -45,14 +45,37 @@ env:
   DEBUG: ${{ inputs.debug == 'true' || github.event.inputs.debug == 'true' || '' }}
 
 jobs:
+  determine_registries:
+    name: Determine Registries
+    runs-on: ubuntu-latest
+    outputs:
+      dockerhub: ${{ steps.setvar.outputs.dockerhub }}
+      tcr: ${{ steps.setvar.outputs.tcr }}
+    steps:
+      - name: Set output variables
+        id: setvar
+        run: |
+          if [ -n "$DOCKERHUB_USERNAME" ] &&
+             [ -n "$DOCKERHUB_PASSWORD" ]; then
+            echo "DockerHub registry credentials set"
+            echo "::set-output name=dockerhub::true"
+          fi
+          if [ -n "$TCR_USERNAME" ]] &&
+             [ -n "$TCR_PASSWORD" ]]; then
+            echo "Tencent Container Registry credentials set"
+            echo "::set-output name=tcr::true"
+          fi
+
   Build:
     name: Image Build
+    needs: determine_registries
     runs-on: ubuntu-latest
     steps:
       - name: Environment
         run: env | sort
 
       - name: Login to Docker Hub
+        if: needs.determine_registries.outputs.dockerhub == 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -103,12 +126,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Login to Registry
+      - name: Login to TCR
+        if: needs.determine_registries.outputs.tcr == 'true'
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.registry }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
+          username: ${{ secrets.TCR_USERNAME }}
+          password: ${{ secrets.TCR_PASSWORD }}
 
       - name: Build and push
         uses: docker/build-push-action@v3
