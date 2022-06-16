@@ -31,6 +31,11 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment_url }}
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ steps.reponame.outputs.lowercase }}
+      cancel-in-progress: false
+
     steps:
       - name: Split Version or Branch
         uses: jungwinter/split@v2
