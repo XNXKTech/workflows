@@ -21,7 +21,7 @@ on:
       K8S_CONFIG:
         required: true
       IAC_TOKEN:
-        required: true
+        required: false
 
 jobs:
   deploy:
