@@ -27,6 +27,7 @@ jobs:
         id: set-env
         run: |
           echo ::set-output name=color::${{ inputs.stage == 'PR Review' && 'orange' || 'green' }}
+          echo ::set-output name=changelog::$(git log -1 --pretty=format:"%s")
           echo ::set-output name=message::${{ contains(github.repository, 'web') && '版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。' || '服务开始滚动更新，预计几分钟后生效。' }}
 
       - name: Split Version or Branch
@@ -103,7 +104,7 @@ jobs:
                   },
                   {
                     "tag": "markdown",
-                    "content": "**${{ steps.set-env.outputs.message }}**\n\n"
+                    "content": "**${{ steps.set-env.outputs.message }}**\n\n本次主要变更内容如下：\n\n${{ steps.set-env.outputs.changelog }}"
                   }
                 ]
                }
