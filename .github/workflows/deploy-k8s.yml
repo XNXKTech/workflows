@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: ${{ github.workflow }}-${{ steps.reponame.outputs.lowercase }}
+      group: ${{ github.workflow }}-${{ inputs.environment }}
       cancel-in-progress: false
 
     steps:
