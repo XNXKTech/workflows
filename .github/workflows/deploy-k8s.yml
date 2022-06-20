@@ -7,6 +7,11 @@ on:
         default: xnxktech.tencentcloudcr.com
         type: string
         required: false
+      namespace:
+        description: Namespace of the deployment
+        default: default
+        type: string
+        required: false
       environment:
         default: Production
         description: The environment to use for the Production.
@@ -67,11 +72,11 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
-          args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }}
+          args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }} -n=${{ inputs.namespace }}
 
       - name: Restart Deployment
         uses: starubiquitous/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
-          args: --insecure-skip-tls-verify rollout restart deployment/${{ steps.split_reponame.outputs._1 }}
+          args: --insecure-skip-tls-verify rollout restart deployment/${{ steps.split_reponame.outputs._1 }} -n=${{ inputs.namespace }}
