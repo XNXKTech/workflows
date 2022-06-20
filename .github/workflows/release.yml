@@ -31,7 +31,7 @@ on:
       semantic_version:
         required: false
         description: Semantic version
-        default: 16
+        default: 19
         type: string
       extra_plugins:
         required: false
