@@ -33,6 +33,14 @@ on:
         description: Semantic version
         default: 16
         type: string
+      extra_plugins:
+        required: false
+        description: Extra plugins
+        default: |
+          @semantic-release/changelog
+          @semantic-release/git
+          conventional-changelog-conventionalcommits
+        type: string
     secrets:
       CI_PAT:
         required: true
@@ -63,11 +71,8 @@ jobs:
         uses: cycjimmy/semantic-release-action@v2
         id: semantic
         with:
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/git
-            conventional-changelog-conventionalcommits
           semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.extra_plugins }}
         env:
           GITHUB_TOKEN: ${{ secrets.CI_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
