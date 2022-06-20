@@ -27,6 +27,12 @@ on:
       last_release_version:
         description: "Last release version"
         value: ${{ jobs.release.outputs.last_release_version }}
+    inputs:
+      semantic_version:
+        required: false
+        description: Semantic version
+        default: 16
+        type: string
     secrets:
       CI_PAT:
         required: true
@@ -61,6 +67,7 @@ jobs:
             @semantic-release/changelog
             @semantic-release/git
             conventional-changelog-conventionalcommits
+          semantic_version: ${{ inputs.semantic_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.CI_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
