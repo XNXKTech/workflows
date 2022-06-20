@@ -15,7 +15,7 @@ on:
 jobs:
   cleanup:
     name: Cleanup
-    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.closed == true }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request.merged == true || github.event.pull_request.closed == true) }}
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
