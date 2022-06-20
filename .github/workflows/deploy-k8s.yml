@@ -67,7 +67,7 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
-          args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.REGISTRY }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }}
+          args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }}
 
       - name: Restart Deployment
         uses: starubiquitous/kubectl@master
