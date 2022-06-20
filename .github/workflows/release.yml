@@ -48,9 +48,17 @@ on:
         type: string
     secrets:
       CI_PAT:
-        required: true
+        required: false
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: false
       NPM_TOKEN:
         required: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
 
 jobs:
   release:
@@ -88,5 +96,5 @@ jobs:
             conventional-changelog-conventionalcommits
           dry_run: ${{ inputs.dry_run }}
         env:
-          GITHUB_TOKEN: ${{ secrets.CI_PAT }}
+          GITHUB_TOKEN: ${{ env.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

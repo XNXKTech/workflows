@@ -23,6 +23,14 @@ on:
         required: true
       IAC_TOKEN:
         required: false
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: false
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.IAC_TOKEN || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.IAC_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.IAC_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
   deploy:
@@ -53,7 +61,7 @@ jobs:
       - name: Post comment to Pull Request
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.IAC_TOKEN }}
+          github-token: ${{ env.GH_TOKEN }}
           script: |
             // 1. Retrieve existing bot comments for the PR
             const { data: comments } = await github.rest.issues.listComments({

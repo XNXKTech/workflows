@@ -19,6 +19,15 @@ on:
           status/needs-review
         required: false
         type: string
+    secrets:
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
 
 jobs:
   build:
@@ -75,7 +84,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.CI_PAT }}
+          token: ${{ env.GH_TOKEN }}
           commit-message: "style: fix typo"
           title: "style: fix typo"
           branch-suffix: short-commit-hash

@@ -12,6 +12,11 @@ on:
       GH_TOKEN:
         required: true
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN }}
+
 jobs:
   lint:
     name: Lint
@@ -52,6 +57,6 @@ jobs:
 
       - name: Run linters
         env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GH_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ env.GH_TOKEN }}
         run: |
           reviewdog -reporter="github-pr-review" -runners="flake8" -tee
