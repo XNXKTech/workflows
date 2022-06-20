@@ -72,6 +72,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Use remote configuration
+        if: github.event.repository.owner.name == 'XNXKTech'
+        run: |
+          wget -qO- https://raw.githubusercontent.com/XNXKTech/workflows/main/release/.releaserc.json > .releaserc.json
+
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2
         id: semantic
