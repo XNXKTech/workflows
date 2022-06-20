@@ -4,16 +4,16 @@ on:
   workflow_call:
     inputs:
       versions:
-        default: "[\"stable\"]"
+        default: "['stable']"
         description: 'The version of rustfmt to use'
         required: false
         type: string
       components:
-        default: "[\"clippy\"]"
+        default: "['clippy']"
         required: false
         type: string
       toolchain:
-        default: "[\"stable\"]"
+        default: "['stable']"
         description: 'The toolchain to use'
         required: false
         type: string

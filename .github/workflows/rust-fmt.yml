@@ -4,12 +4,12 @@ on:
   workflow_call:
     inputs:
       versions:
-        default: "[\"stable\"]"
+        default: "['stable']"
         description: 'The version of rustfmt to use'
         required: false
         type: string
       components:
-        default: "[\"rustfmt\"]"
+        default: "['rustfmt']"
         required: false
         type: string
 

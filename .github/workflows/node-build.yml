@@ -5,7 +5,7 @@ on:
     inputs:
       versions:
         description: 'Stringified JSON object listing target Node versions'
-        default: "[\"16\"]"
+        default: "['16']"
         required: true
         type: string
       fail-fast:
