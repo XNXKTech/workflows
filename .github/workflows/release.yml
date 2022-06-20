@@ -41,6 +41,11 @@ on:
           @semantic-release/git
           conventional-changelog-conventionalcommits
         type: string
+      dry_run:
+        required: false
+        description: Dry run
+        default: false
+        type: string
     secrets:
       CI_PAT:
         required: true
@@ -73,6 +78,7 @@ jobs:
         with:
           semantic_version: ${{ inputs.semantic_version }}
           extra_plugins: ${{ inputs.extra_plugins }}
+          dry_run: ${{ inputs.dry_run }}
         env:
           GITHUB_TOKEN: ${{ secrets.CI_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
