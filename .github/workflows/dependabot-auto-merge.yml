@@ -3,6 +3,11 @@ name: Dependabot auto merge
 on:
   workflow_call:
     inputs:
+      auto-approve:
+        description: Automatically approve pull-requests
+        default: true
+        required: false
+        type: boolean
       target:
         description: The target branch to merge into.
         type: string
@@ -34,6 +39,7 @@ jobs:
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         id: dependabot-auto-merge
         with:
+          approve: ${{ inputs.auto-approve }}
           target: ${{ inputs.target }}
           command: ${{ inputs.command }}
           github-token: ${{ secrets.GH_TOKEN }}
