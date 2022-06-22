@@ -52,7 +52,7 @@ env:
 
 jobs:
   uptoc:
-    name: ${{ driver }}
+    name: Uptoc
 
     timeout-minutes: ${{ inputs.timeout }}
 
