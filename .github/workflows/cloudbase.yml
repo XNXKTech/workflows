@@ -131,15 +131,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      - name: Cache Cloudbase
-        uses: actions/cache@v3.0.4
-        id: cloudbase-cache
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-cloudbase-cache
-          restore-keys: |
-            ${{ runner.os }}-cloudbase-cache
-
       - name: Download and install cloudbase cli
         if: steps.cloudbase-cache.outputs.cache-hit != 'true'
         run: npm install -g @cloudbase/cli --loglevel=error
