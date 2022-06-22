@@ -23,36 +23,6 @@ on:
         description: The number of minutes to wait for the operation to complete.
         required: false
         type: number
-      static_cdn:
-        default: false
-        description: Whether to use a static CDN.
-        required: false
-        type: string
-      driver:
-        default: cos
-        description: The static driver to use for the cloudbase.
-        required: false
-        type: string
-      region:
-        default: ap-chengdu
-        description: The region to use for the cloudbase.
-        required: false
-        type: string
-      bucket:
-        default: cloudbase-static-100
-        description: The bucket to use for the cloudbase.
-        required: false
-        type: string
-      static_dir:
-        default: build/static
-        description: Whether to build the dist folder.
-        required: false
-        type: string
-      saveroot:
-        default: ./static
-        description: The root folder to save the static files to.
-        required: false
-        type: string
       build_dir:
         default: build
         description: Whether to build the dist folder.
@@ -65,12 +35,6 @@ on:
       SECRET_KEY:
         description: "The secret key for the Cloudbase Deploy"
         required: true
-      COS_SECRET_ID:
-        description: "The ID of the secret to use for the COS"
-        required: false
-      COS_SECRET_KEY:
-        description: "The secret key for the COS"
-        required: false
       ENV_ID:
         description: "The envId of the Cloudbase Deploy"
         required: true
@@ -82,8 +46,6 @@ defaults:
 env:
   SECRET_ID: ${{ secrets.SECRET_ID }}
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
-  COS_SECRET_ID: ${{ secrets.COS_SECRET_ID == '' && secrets.SECRET_ID || secrets.COS_SECRET_ID }}
-  COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY == '' && secrets.SECRET_KEY || secrets.COS_SECRET_KEY }}
   ENV_ID: ${{ secrets.ENV_ID }}
   ENV: ${{ inputs.env }}
 
@@ -171,20 +133,6 @@ jobs:
       - name: Build
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: yarn build
-
-      - name: Upate Static file
-        if: inputs.static_cdn == 'true'
-        uses: saltbo/uptoc@v1.4.3
-        with:
-          driver: ${{ inputs.driver }}
-          region: ${{ inputs.region }}
-          bucket: ${{ inputs.bucket }}
-          exclude: .git,.github,.gitignore,README.md,test,images,logo,svg,video,*.html
-          dist: ${{ inputs.static_dir }}
-          saveroot: ${{ inputs.saveroot }}
-        env:
-          UPTOC_UPLOADER_AK: ${{ env.COS_SECRET_ID }}
-          UPTOC_UPLOADER_SK: ${{ env.COS_SECRET_KEY }}
 
       - name: Login to Cloudbase
         run: |
