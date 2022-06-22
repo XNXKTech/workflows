@@ -1,0 +1,100 @@
+name: Uptoc
+
+on:
+  workflow_call:
+    inputs:
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      cache_dir:
+        default: tmp
+        required: false
+        type: string
+      cache_key:
+        default: cache
+        required: false
+        type: string
+      driver:
+        default: cos
+        required: false
+        type: string
+      region:
+        default: ap-chengdu
+        required: false
+        type: string
+      bucket:
+        default: cloudbase-static-100
+        required: false
+        type: string
+      exclude:
+        default: .git,.github,.gitignore,README.md,test,images,logo,svg,video,*.html
+        required: false
+        type: string
+      dist:
+        default: .
+        required: false
+        type: string
+      saveroot:
+        default: ./
+        required: false
+        type: string
+    secrets:
+      UPTOC_UPLOADER_AK:
+        required: true
+      UPTOC_UPLOADER_SK:
+        required: true
+
+env:
+  UPTOC_UPLOADER_AK: ${{ secrets.UPTOC_UPLOADER_AK }}
+  UPTOC_UPLOADER_SK: ${{ secrets.UPTOC_UPLOADER_SK }}
+
+steps:
+  uptoc:
+    name: ${{ driver }}
+
+    timeout-minutes: ${{ inputs.timeout }}
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ inputs.driver }}-${{ inputs.bucket }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Environment
+        run: env | sort
+
+      - name: Split string
+        uses: jungwinter/split@v2
+        id: split
+        with:
+          separator: '/'
+          msg: ${{ github.ref }}
+
+      - name: Checkout ${{ steps.split.outputs._2 }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.split.outputs._2 }}
+          submodules: 'true'
+
+      - name: Restore Cache
+        uses: actions/cache@v3.0.4
+        id: build-cache
+        with:
+          path: |
+            ${{ inputs.cache_dir }}
+          key: ${{ runner.os }}-${{ inputs.cache_key }}-${{ github.sha }}
+
+      - name: Upate Static file
+        uses: saltbo/uptoc@v1.4.3
+        with:
+          driver: ${{ inputs.driver }}
+          region: ${{ inputs.region }}
+          bucket: ${{ inputs.bucket }}
+          exclude: ${{ inputs.exclude }}
+          dist: ${{ inputs.dist }}
+          saveroot: ${{ inputs.saveroot }}
