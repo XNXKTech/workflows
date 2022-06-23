@@ -3,6 +3,11 @@ name: Docker
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       registry:
         default: ''
         description: 'Docker registry'
@@ -48,7 +53,12 @@ env:
 jobs:
   determine_registries:
     name: Determine Registries
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{fromJson(inputs.runs-on)}}
+
     outputs:
       dockerhub: ${{ steps.setvar.outputs.dockerhub }}
       tcr: ${{ steps.setvar.outputs.tcr }}
@@ -81,7 +91,13 @@ jobs:
   Build:
     name: Image Build
     needs: determine_registries
-    runs-on: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{fromJson(inputs.runs-on)}}
+
     steps:
       - name: Environment
         run: env | sort
