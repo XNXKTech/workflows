@@ -3,6 +3,11 @@ name: Cloudbase
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       env:
         description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
         type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
@@ -60,7 +65,11 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment_url }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{fromJson(inputs.runs-on)}}
 
     concurrency:
       group: ${{ github.workflow }}-${{ inputs.environment }}
