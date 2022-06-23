@@ -24,6 +24,11 @@ on:
         type: string
         required: false
         default: linux/amd64
+      build-args:
+        type: string
+        required: false
+        default: |
+          CI=true
     secrets:
       USERNAME:
         required: false
@@ -172,6 +177,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
+          build-args: ${{ inputs.build-args }}
           context: ${{ inputs.context }}
           platforms: ${{ inputs.platforms }}
           push: true
