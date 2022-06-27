@@ -41,22 +41,30 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.ref || steps.split.outputs._2 }}
 
+      - name: Split repo name
+        uses: jungwinter/split@v2
+        id: split_reponame
+        with:
+          separator: '/'
+          msg: ${{ github.repository }}
+
       - name: Get release notes
         if: github.event_name == 'release'
-        uses: octokit/request-action@v2.x
         id: get_release_notes
-        with:
-          route: GET /repos/{owner}/{repo}/releases/tags/{tag}
-          owner: ${{ github.owner }}
-          repo: ${{ github.repo }}
-          tag: ${{ github.event.release.tag_name }}
+        run: |
+          changelog="$(gh api /repos/$OWNER/$REPO/releases/tags/$TAG | jq -c '.body | tojson')"
+          echo 'CHANGELOG='$changelog >> $GITHUB_ENV
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          TAG: ${{ github.event.release.tag_name }}
 
       - name: Set env
         id: set-env
         run: |
           echo ::set-output name=color::${{ inputs.stage == 'PR Review' && 'orange' || 'green' }}
           if [[ ${{ github.event_name == 'release' }} ]]; then
-            echo ::set-output name=changelog::${{ steps.get_release_notes.outputs.data.body }}
+            echo ::set-output name=changelog::${{ env.CHANGELOG }}
           fi
           if [[ ${{ github.event_name == 'pull_request' }} ]]; then
             echo ::set-output name=changelog::${{ github.event.pull_request.title }}
