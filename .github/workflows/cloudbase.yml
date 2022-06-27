@@ -44,10 +44,6 @@ on:
         description: "The envId of the Cloudbase Deploy"
         required: true
 
-defaults:
-  run:
-    shell: bash -euxo pipefail {0}
-
 env:
   SECRET_ID: ${{ secrets.SECRET_ID }}
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
