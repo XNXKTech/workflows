@@ -113,9 +113,6 @@ jobs:
           echo "::set-output name=tcb::$(npm config get prefix)/bin/tcb"
           echo "::set-output name=cloudbase::$(npm config get prefix)/bin/cloudbase"
 
-      - name: List node bin
-        run: ls "$(npm config get prefix)/bin" | grep tcb
-
       - name: Cache Cloudbase
         uses: actions/cache@v3.0.4
         id: cloudbase-cache
