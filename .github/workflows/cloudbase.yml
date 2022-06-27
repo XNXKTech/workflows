@@ -113,19 +113,14 @@ jobs:
           echo "::set-output name=tcb::$(npm config get prefix)/bin/tcb"
           echo "::set-output name=cloudbase::$(npm config get prefix)/bin/cloudbase"
 
-      - name: Cache Cloudbase
-        uses: actions/cache@v3.0.4
-        id: cloudbase-cache
-        with:
-          path: |
-            ${{ steps.cache-dir-path.outputs.tcb }}
-            ${{ steps.cache-dir-path.outputs.cloudbase }}
-          key: ${{ runner.os }}-cloudbase
-          restore-keys: |
-            ${{ runner.os }}-cloudbase
+      - name: Check TCB
+        id: tcb
+        run: |
+          echo "::set-output name=tcb::$(tcb -v | grep CLI | head -1)"
+          echo "::set-output name=cloudbase::$(cloudbase -v | grep CLI | head -1)"
 
       - name: Download and install cloudbase cli
-        if: steps.cloudbase-cache.outputs.cache-hit != 'true'
+        if: contains(steps.tcb.outputs.tcb, 'CloudBase') != true || contains(steps.tcb.outputs.cloudbase, 'CloudBase') != true
         run: |
           npm i -g @cloudbase/cli
 
