@@ -114,13 +114,19 @@ jobs:
       - name: Get cache directory path
         id: cache-dir-path
         run: |
-          echo "::set-output name=dir::$(npm config get prefix)/bin"
+          echo "::set-output name=tcb::$(npm config get prefix)/bin/tcb"
+          echo "::set-output name=cloudbase::$(npm config get prefix)/bin/cloudbase"
+
+      - name: List node bin
+        run: ls "$(npm config get prefix)/bin" | grep tcb
 
       - name: Cache Cloudbase
         uses: actions/cache@v3.0.4
         id: cloudbase-cache
         with:
-          path: ${{ steps.cache-dir-path.outputs.dir }}
+          path: |
+            ${{ steps.cache-dir-path.outputs.tcb }}
+            ${{ steps.cache-dir-path.outputs.cloudbase }}
           key: ${{ runner.os }}-cloudbase
           restore-keys: |
             ${{ runner.os }}-cloudbase
