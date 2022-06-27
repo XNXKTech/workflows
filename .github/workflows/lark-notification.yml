@@ -52,7 +52,7 @@ jobs:
         if: github.event_name == 'release'
         id: get_release_notes
         run: |
-          changelog="$(gh api /repos/$OWNER/$REPO/releases/tags/$TAG | jq -c '.body | tojson')"
+          changelog="$(gh api /repos/$OWNER/$REPO/releases/tags/$TAG | jq '.body')"
           echo 'CHANGELOG='$changelog >> $GITHUB_ENV
         env:
           OWNER: ${{ github.repository_owner }}
