@@ -11,8 +11,14 @@ on:
     secrets:
       CI_PAT:
         required: false
+      GH_TOKEN:
+        required: false
       LARK_WEBHOOK_URL:
         required: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == ''&& secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == ''&& secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
   notification:
@@ -35,11 +41,32 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.ref || steps.split.outputs._2 }}
 
+      - name: Get release notes
+        if: github.event_name == 'release'
+        uses: octokit/request-action@v2.x
+        id: get_release_notes
+        with:
+          route: GET /repos/{owner}/{repo}/releases/tags/{tag}
+          owner: ${{ github.owner }}
+          repo: ${{ github.repo }}
+          tag: ${{ github.event.release.tag_name }}
+
       - name: Set env
         id: set-env
         run: |
           echo ::set-output name=color::${{ inputs.stage == 'PR Review' && 'orange' || 'green' }}
-          echo ::set-output name=changelog::$(git log -1 --pretty=format:"%s")
+          if [[ ${{ github.event_name == 'release' }} ]]; then
+            echo ::set-output name=changelog::${{ steps.get_release_notes.outputs.data.body }}
+          fi
+          if [[ ${{ github.event_name == 'pull_request' }} ]]; then
+            echo ::set-output name=changelog::${{ github.event.pull_request.title }}
+          fi
+          if [[ ${{ github.event_name == 'push' }} ]]; then
+            echo ::set-output name=changelog::${{ github.event.push.commits[0].message }}
+          fi
+          if [[ ${{ github.event_name == 'workflow_dispatch' }} ]]; then
+            echo ::set-output name=changelog::$(git log -1 --pretty=format:"%s")
+          fi
           echo ::set-output name=message::${{ contains(github.repository, 'web') && '版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。' || '服务开始滚动更新，预计几分钟后生效。' }}
 
       - name: Lark Notification
