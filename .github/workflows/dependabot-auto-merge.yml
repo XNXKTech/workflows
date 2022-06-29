@@ -3,6 +3,11 @@ name: Dependabot auto merge
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       auto-approve:
         description: Automatically approve pull-requests
         default: true
@@ -31,7 +36,12 @@ on:
 jobs:
   auto-merge:
     name: Dependabot
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{fromJson(inputs.runs-on)}}
+
     if: ${{ github.actor == 'dependabot[bot]' }} && toJson(github.event.comment.body) == '"@${{ inputs.botName }} ${{ inputs.command }}"'
     continue-on-error: true
     steps:
