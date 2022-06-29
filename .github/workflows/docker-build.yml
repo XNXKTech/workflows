@@ -8,6 +8,11 @@ on:
         description: The OSs that the workflow is run on
         required: false
         type: string
+      timeout:
+        default: 60
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
       registry:
         default: ''
         description: 'Docker registry'
@@ -98,6 +103,7 @@ jobs:
     needs: determine_registries
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ inputs.timeout }}
 
     strategy:
       matrix:
