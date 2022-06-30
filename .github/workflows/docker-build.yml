@@ -62,6 +62,7 @@ env:
 
 jobs:
   determine_registries:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Determine Registries
     runs-on: ${{ matrix.os }}
 
