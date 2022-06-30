@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deployment:
-        default: pr.yml
+        default: pr.yaml
         description: The deployment file to use for the PR review.
         type: string
         required: false
