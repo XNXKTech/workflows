@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: ${{ github.workflow }}-${{ inputs.environment }}
+      group: ${{ github.workflow }}-kubernetes-${{ inputs.environment }}
       cancel-in-progress: false
 
     steps:
