@@ -68,7 +68,7 @@ jobs:
         os: ${{fromJson(inputs.runs-on)}}
 
     concurrency:
-      group: ${{ github.workflow }}-${{ inputs.environment }}
+      group: ${{ github.workflow }}-tcb-${{ inputs.environment }}
       cancel-in-progress: false
 
     steps:
