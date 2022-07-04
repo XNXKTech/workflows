@@ -72,16 +72,16 @@ jobs:
         id: set-env
         run: |
           echo ::set-output name=color::${{ inputs.stage == 'PR Review' && 'orange' || 'green' }}
-          if [[ ${{ github.event_name == 'release' }} ]]; then
+          if ${{ github.event_name == 'release' }} ; then
             echo ::set-output name=changelog::${{ env.CHANGELOG }}
           fi
-          if [[ ${{ github.event_name == 'pull_request' }} ]]; then
+          if ${{ github.event_name == 'pull_request' }} ; then
             echo ::set-output name=changelog::\"${{ github.event.pull_request.title }}\"
           fi
-          if [[ ${{ github.event_name == 'push' }} ]]; then
+          if ${{ github.event_name == 'push' }} ; then
             echo ::set-output name=changelog::${{ github.event.push.commits[0].message }}
           fi
-          if [[ ${{ github.event_name == 'workflow_dispatch' }} ]]; then
+          if ${{ github.event_name == 'workflow_dispatch' }} ; then
             echo ::set-output name=changelog::$(git log -1 --pretty=format:"%s")
           fi
           echo ::set-output name=message::${{ contains(github.repository, 'web') && '版本已推送至 TCB、CDN 节点，CDN 节点开始滚动更新，预计几分钟后生效。' || '服务开始滚动更新，预计几分钟后生效。' }}
