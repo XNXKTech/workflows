@@ -3,6 +3,11 @@ name: Uptoc
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       timeout:
         default: 10
         description: The number of minutes to wait for the operation to complete.
@@ -58,7 +63,11 @@ jobs:
 
     if: ${{ github.event_name != 'pull_request' }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ inputs.driver }}-${{ inputs.bucket }}
