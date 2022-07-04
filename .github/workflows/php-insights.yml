@@ -3,6 +3,11 @@ name: Laravel Insights
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: "['8.0']"
@@ -58,10 +63,11 @@ jobs:
   ci:
     name: ${{ matrix.php-versions }} - ${{ matrix.stability }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
         php-versions: ${{fromJson(inputs.versions)}}
         stability: ${{fromJson(inputs.stability)}}
 
