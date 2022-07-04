@@ -14,11 +14,11 @@ on:
         required: false
         type: number
       cache_dir:
-        default: tmp
+        default: build
         required: false
         type: string
       cache_key:
-        default: cache
+        default: build
         required: false
         type: string
       driver:
