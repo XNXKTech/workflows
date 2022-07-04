@@ -3,6 +3,11 @@ name: Notification
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       stage:
         required: true
         description: The stage of the workflow.
@@ -24,7 +29,11 @@ jobs:
   notification:
     name: Lark
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
 
     permissions: read-all
 

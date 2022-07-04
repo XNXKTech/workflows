@@ -3,6 +3,11 @@ name: Terraform
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       env:
         description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
         type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
@@ -106,11 +111,12 @@ env:
 jobs:
   terraform:
     name: Terraform
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: ${{ inputs.timeout }}
 
     strategy:
       matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
         directory: ${{ fromJSON(inputs.directory) }}
 
     outputs:
