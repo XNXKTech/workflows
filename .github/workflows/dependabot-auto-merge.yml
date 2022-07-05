@@ -27,7 +27,7 @@ jobs:
       matrix:
         os: ${{fromJson(inputs.runs-on)}}
 
-    if: ${{ github.actor == 'dependabot[bot]' }} && toJson(github.event.comment.body) == '"@${{ inputs.botName }} ${{ inputs.command }}"'
+    if: ${{ github.actor == 'dependabot[bot]' }}
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
