@@ -1,0 +1,41 @@
+name: Kubernetes
+
+on:
+  workflow_call:
+    inputs:
+      file:
+        type: string
+        required: true
+    secrets:
+      K8S_CONFIG:
+        required: true
+
+jobs:
+  deploy:
+    name: Apply
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-kubernetes-${{ inputs.file }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Split Version or Branch
+        uses: jungwinter/split@v2
+        id: split
+        with:
+          separator: '/'
+          msg: ${{ github.ref }}
+
+      - name: Checkout ${{ steps.split.outputs._2 }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.split.outputs._2 }}
+
+      - name: Apply
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify apply -f ${{ inputs.file }}
