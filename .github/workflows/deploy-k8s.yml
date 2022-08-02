@@ -3,6 +3,11 @@ name: Deployment
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       registry:
         default: xnxktech.tencentcloudcr.com
         type: string
@@ -35,7 +40,12 @@ jobs:
     environment:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment_url }}
-    runs-on: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{fromJson(inputs.runs-on)}}
 
     concurrency:
       group: ${{ github.workflow }}-kubernetes-${{ inputs.environment }}
