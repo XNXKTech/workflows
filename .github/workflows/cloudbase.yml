@@ -8,6 +8,11 @@ on:
         description: The OSs that the workflow is run on
         required: false
         type: string
+      node-version:
+        description: 'Stringified JSON object listing target Node versions'
+        default: 16
+        required: false
+        type: string
       env:
         description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
         type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
@@ -66,6 +71,7 @@ jobs:
     strategy:
       matrix:
         os: ${{fromJson(inputs.runs-on)}}
+        node: ${{fromJson(inputs.node-version)}}
 
     concurrency:
       group: ${{ github.workflow }}-tcb-${{ inputs.environment }}
