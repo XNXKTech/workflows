@@ -3,6 +3,11 @@ name: Node Test
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       versions:
         description: 'Stringified JSON object listing target Node versions'
         default: "['16']"
@@ -14,10 +19,11 @@ jobs:
 
     name: ${{ matrix.node-versions }} Test
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: ${{fromJson(inputs.runs-on)}}
         node-versions: ${{fromJson(inputs.versions)}}
 
     steps:
