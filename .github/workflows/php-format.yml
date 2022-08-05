@@ -1,15 +1,29 @@
-name: PHP Code Style
+name: Code style analysis
 
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       php-versions:
         default: '8.0'
         required: false
         type: string
+      version:
+        description: 'Stringified JSON object listing target PHP versions'
+        default: "['8.0']"
+        required: false
+        type: string
+      stability:
+        default: "['prefer-stable']"
+        required: false
+        type: string
     secrets:
       CI_PAT:
-        required: true
+        required: false
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
         required: false
@@ -20,22 +34,34 @@ env:
   token: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
 
 jobs:
-  php-cs-fixer:
-    name: PHP CS Fixer
-    runs-on: ubuntu-latest
+  ci:
+
+    name: ${{ matrix.php }} - ${{ matrix.dependency-version }}
+
+    if: ${{ github.event_name == 'pull_request' }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
+        php: ${{fromJson(inputs.version)}}
+        stability: ${{fromJson(inputs.stability)}}
+
     steps:
       - uses: actions/checkout@v3.0.2
         with:
+          persist-credentials: false
           fetch-depth: 1
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup PHP ${{ inputs.php-versions }}
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ inputs.php-versions }}
-          extensions: mbstring, dom, fileinfo
-          coverage: xdebug
-          tools: php-cs-fixer, composer:v2
+          php-version: ${{ matrix.php }}
+          extensions: dom, mbstring, zip
+          coverage: none
+          tools: php-cs-fixer, composer:v2, cs2pr
 
       - name: Get composer cache directory
         id: composer-cache
@@ -45,31 +71,38 @@ jobs:
         uses: actions/cache@v3.0.5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-php-cs-fixer-${{ github.event.number }}
-          restore-keys: ${{ runner.os }}-php-cs-fixer-
+          key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: dependencies-php-${{ matrix.php }}-composer-
 
-      - name: Install PHP CS Fixer
+      - name: Install dependencies
         run: |
-          composer global require friendsofphp/php-cs-fixer --no-interaction --no-update
+          composer global require friendsofphp/php-cs-fixer nunomaduro/phpinsights --no-interaction --no-update
+
+      - name: Use remote configuration
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
+        run: |
+          wget -qO- https://raw.githubusercontent.com/XNXKTech/workflows/main/phpcs/.php-cs-fixer.php > .php-cs-fixer.php
 
       - name: PHP CS Fixer
-        run: php-cs-fixer fix --config .php-cs-fixer.dist.php
+        run: php-cs-fixer fix -v
 
-      - name: Create Pull Request
-        if: ${{ always() }}
-        id: cpr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ env.GH_TOKEN }}
-          commit-message: "style: fix typo [skip ci]"
-          title: "style: fix typo"
-          branch-suffix: short-commit-hash
-          branch: style-fix-typo
-          reviewers: XNXKTech/infra
-          labels: |
-            status/need-review
-          delete-branch: true
-      - name: Check outputs
+      - name: PHP Insights
+        run: phpinsights --fix
+
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
         run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          git config user.name starfire-bot
+          git config user.email 83063940+starfire-bot@users.noreply.github.com
+
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == false
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "style: fix typo"
+          git push
