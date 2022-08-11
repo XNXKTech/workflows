@@ -10,7 +10,7 @@ on:
         type: string
       node-version:
         description: 'Stringified JSON object listing target Node versions'
-        default: 16
+        default: "['16']"
         required: false
         type: string
       env:
