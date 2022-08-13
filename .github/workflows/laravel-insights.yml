@@ -117,7 +117,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Set Minimum PHP 8.0 Versions
-        uses: nick-invision/retry@v2.8.0
+        uses: nick-invision/retry@v2.8.1
         with:
           timeout_minutes: 5
           max_attempts: 5
@@ -125,7 +125,7 @@ jobs:
         if: matrix.php-versions >= 8
 
       - name: Set Minimum PHP 8.1 Versions
-        uses: nick-invision/retry@v2.8.0
+        uses: nick-invision/retry@v2.8.1
         with:
           timeout_minutes: 5
           max_attempts: 5
@@ -133,7 +133,7 @@ jobs:
         if: matrix.php-versions >= 8.1
 
       - name: Install dependencies
-        uses: nick-invision/retry@v2.8.0
+        uses: nick-invision/retry@v2.8.1
         with:
           timeout_minutes: 5
           max_attempts: 5
