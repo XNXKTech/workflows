@@ -79,7 +79,7 @@ jobs:
             echo ::set-output name=changelog::${{ github.event.pull_request.title }}
           fi
           if ${{ github.event_name == 'push' }} ; then
-            echo ::set-output name=changelog::${{ github.event.push.commits[0].message }}
+            echo ::set-output name=changelog::${{ github.event.head_commit.message }}
           fi
           if ${{ github.event_name == 'workflow_dispatch' }} ; then
             echo ::set-output name=changelog::$(git log -1 --pretty=format:"%s")
