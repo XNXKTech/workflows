@@ -76,7 +76,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer global require friendsofphp/php-cs-fixer nunomaduro/phpinsights --no-interaction --no-update
+          composer require friendsofphp/php-cs-fixer nunomaduro/phpinsights --no-interaction --no-update
 
       - name: Use remote configuration
         if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
@@ -84,10 +84,10 @@ jobs:
           wget -qO- https://raw.githubusercontent.com/XNXKTech/workflows/main/phpcs/.php-cs-fixer.php > .php-cs-fixer.php
 
       - name: PHP CS Fixer
-        run: php-cs-fixer fix -v
+        run: ./vendor/bin/php-cs-fixer fix -v
 
       - name: PHP Insights
-        run: phpinsights --fix
+        run: /vendor/bin/phpinsights --fix
 
       - name: Starfire bot
         if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
