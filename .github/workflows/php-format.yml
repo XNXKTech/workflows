@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup PHP ${{ inputs.php-versions }}
+      - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -74,35 +74,18 @@ jobs:
           key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
           restore-keys: dependencies-php-${{ matrix.php }}-composer-
 
-      - name: Install dependencies
-        run: |
-          composer require friendsofphp/php-cs-fixer nunomaduro/phpinsights --no-interaction --no-update
-
       - name: Use remote configuration
         if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
         run: |
           wget -qO- https://raw.githubusercontent.com/XNXKTech/workflows/main/phpcs/.php-cs-fixer.php > .php-cs-fixer.php
 
       - name: PHP CS Fixer
-        run: ./vendor/bin/php-cs-fixer fix -v
-
-      - name: PHP Insights
-        run: /vendor/bin/phpinsights --fix
-
-      - name: Starfire bot
-        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
-        run: |
-          git config user.name starfire-bot
-          git config user.email 83063940+starfire-bot@users.noreply.github.com
-
-      - name: Starfire bot
-        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == false
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+        uses: docker://oskarstark/php-cs-fixer-ga
+        with:
+          args: -v
 
       - name: Commit changes
-        run: |
-          git add .
-          git commit -m "style: fix typo"
-          git push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "style: fix typo"
+          push_options: --force
