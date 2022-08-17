@@ -1,4 +1,4 @@
-name: Node Build
+name: Node
 
 on:
   workflow_call:
@@ -8,9 +8,34 @@ on:
         description: The OSs that the workflow is run on
         required: false
         type: string
-      versions:
+      node-version:
         description: 'Stringified JSON object listing target Node versions'
         default: "['16']"
+        required: false
+        type: string
+      env:
+        description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
+        type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
+        default: ''
+        required: false
+      environment:
+        default: Production
+        description: The environment to use for the Production.
+        type: string
+        required: false
+      api_url:
+        default: 'https://api.xnxk.com'
+        description: The API URL to use for the Production.
+        type: string
+        required: false
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      build_dir:
+        default: build
+        description: Whether to build the dist folder.
         required: false
         type: string
       fail-fast:
@@ -21,19 +46,34 @@ on:
 
 jobs:
   build:
-
-    name: ${{ matrix.node-versions }} Build
+    name: ${{ matrix.node }} Build
+    timeout-minutes: ${{ inputs.timeout }}
 
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: ${{fromJson(inputs.runs-on)}}
-        node-versions: ${{fromJson(inputs.versions)}}
+        node: ${{fromJson(inputs.node-version)}}
 
       fail-fast: ${{ inputs.fail-fast }}
 
     steps:
+      - name: Setup env name to lowercase
+        id: environment
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ inputs.environment }}
+
+      - name: Setup environment variables
+        run: |
+          echo "NODE_ENV=${{ steps.environment.outputs.lowercase }}" >> $GITHUB_ENV
+          echo "X_API_URL=${{ inputs.api_url }}" >> $GITHUB_ENV
+          echo "${{ env.ENV }}" >> $GITHUB_ENV
+
+      - name: Environment
+        run: env | sort
+
       - uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 1
@@ -69,4 +109,14 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
 
-      - run: yarn build
+      - name: Cache build
+        uses: actions/cache@v3.0.6
+        id: build-cache
+        with:
+          path: |
+            ${{ inputs.build_dir }}
+          key: ${{ runner.os }}-${{ inputs.build_dir }}-${{ github.sha }}
+
+      - name: Build
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        run: yarn build
