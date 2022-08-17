@@ -55,9 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3.0.2
         with:
-          persist-credentials: false
           fetch-depth: 1
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.head_ref }}
+          token: ${{ env.GITHUB_TOKEN }}
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
@@ -88,8 +88,21 @@ jobs:
         with:
           args: -v
 
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
+        run: |
+          git config user.name starfire-bot
+          git config user.email 83063940+starfire-bot@users.noreply.github.com
+
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == false
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "style: fix typo"
-          push_options: --force
+        continue-on-error: true
+        run: |
+          git add .
+          git commit -m "style: fix typo [skip ci]"
+          git push origin ${{ github.head_ref }} --force
