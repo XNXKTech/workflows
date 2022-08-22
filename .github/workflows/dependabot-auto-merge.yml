@@ -54,18 +54,13 @@ jobs:
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
 
       - name: Use GH for merge PR
         if: steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
           gh pr merge ${{ github.event.number }} --squash -d
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Major change need review
         if: steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
         run: |
           gh pr edit ${{ github.event.number }} --add-label "status/need-review"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
