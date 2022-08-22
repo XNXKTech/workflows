@@ -28,6 +28,11 @@ on:
         description: The API URL to use for the Production.
         type: string
         required: false
+      eslint:
+        default: true
+        description: Whether to run ESLint on the code
+        type: boolean
+        required: false
       timeout:
         default: 10
         description: The number of minutes to wait for the operation to complete.
@@ -119,4 +124,6 @@ jobs:
 
       - name: Build
         if: steps.build-cache.outputs.cache-hit != 'true'
+        env:
+          DISABLE_ESLINT_PLUGIN: ${{ inputs.eslint }}
         run: yarn build
