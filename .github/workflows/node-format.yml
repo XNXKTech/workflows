@@ -29,6 +29,9 @@ on:
         description: 'Personal access token passed from the caller workflow'
         required: false
 
+permissions:
+  contents: write
+
 env:
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
   GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
