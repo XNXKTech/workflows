@@ -35,16 +35,16 @@ env:
   token: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
-  build:
+  prettier:
 
-    name: Prettier
+    name: ${{ matrix.node-versions }} Prettier
 
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-versions: ${{fromJson(inputs.versions)}}
         os: ${{ fromJson(inputs.runs-on) }}
+        node-versions: ${{ fromJson(inputs.versions) }}
 
     steps:
       - uses: actions/checkout@v3.0.2
