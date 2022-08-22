@@ -54,7 +54,7 @@ on:
         required: false
         type: number
       min_architecture:
-        default: 80
+        default: 65
         required: false
         type: number
       min_style:
