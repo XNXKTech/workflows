@@ -27,12 +27,12 @@ on:
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
-        required: true
+        required: false
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
-  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
-  token: ${{ secrets.GH_TOKEN == '' && secrets.CI_PAT || secrets.GH_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
   build:
