@@ -62,8 +62,5 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
 
-      - name: Check with eslint
-        uses: tinovyatkin/action-eslint@v1
-        with:
-          repo-token: ${{secrets.GITHUB_TOKEN}}
-          check-name: eslint
+      - name: ESLint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx --quiet
