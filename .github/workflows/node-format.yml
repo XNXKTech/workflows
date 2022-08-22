@@ -77,7 +77,7 @@ jobs:
 
       - name: Install package.json dependencies with Yarn
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
+        run: yarn --frozen-lockfile --ignore-engines --ignore-optional
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
