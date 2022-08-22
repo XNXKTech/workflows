@@ -94,13 +94,13 @@ jobs:
         run: npx prettier --write '**/*.{js,jsx,ts,tsx}'
 
       - name: Starfire bot
-        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.repository_owner) == true
         run: |
           git config user.name starfire-bot
           git config user.email 83063940+starfire-bot@users.noreply.github.com
 
       - name: Starfire bot
-        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == false
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.repository_owner) == false
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
