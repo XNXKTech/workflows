@@ -25,7 +25,7 @@ jobs:
 
     strategy:
       matrix:
-        os: ${{fromJson(inputs.runs-on)}}
+        os: ${{ fromJson(inputs.runs-on) }}
 
     if: ${{ github.actor == 'dependabot[bot]' }}
     continue-on-error: true
