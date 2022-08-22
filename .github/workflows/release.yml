@@ -91,7 +91,7 @@ jobs:
           fetch-depth: 0
 
       - name: Use remote configuration
-        if: contains(fromJson('["XNXKTech", "StarUbiquitous", "terraform-xnxk-modules"]'), github.event.repository.owner.name) == true
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous", "terraform-xnxk-modules"]'), github.repository_owner) == true
         run: |
           wget -qO- https://raw.githubusercontent.com/XNXKTech/workflows/main/release/.releaserc.json > .releaserc.json
 
