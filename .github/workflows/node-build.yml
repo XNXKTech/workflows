@@ -19,7 +19,7 @@ on:
         default: ''
         required: false
       environment:
-        default: Production
+        default: Development
         description: The environment to use for the Production.
         type: string
         required: false
