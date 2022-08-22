@@ -85,23 +85,24 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
 
-      - name: Prettier fix
-        run: yarn lint --fix
+      - name: Prettier
+        run: npx prettier --write '**/*.{js,jsx,ts,tsx}'
 
-      - name: Create Pull Request
-        if: ${{ always() }}
-        id: cpr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ env.GH_TOKEN }}
-          commit-message: "style: fix typo"
-          title: "style: fix typo"
-          branch-suffix: short-commit-hash
-          branch: style-fix-typo
-          reviewers: ${{ inputs.reviewers }}
-          labels: ${{ inputs.labels }}
-          delete-branch: true
-      - name: Check outputs
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == true
         run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          git config user.name starfire-bot
+          git config user.email 83063940+starfire-bot@users.noreply.github.com
+
+      - name: Starfire bot
+        if: contains(fromJson('["XNXKTech", "StarUbiquitous"]'), github.event.repository.owner.name) == false
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Commit changes
+        continue-on-error: true
+        run: |
+          git add .
+          git commit -m "style: fix typo [skip ci]"
+          git push origin ${{ github.head_ref }}
