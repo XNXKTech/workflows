@@ -42,6 +42,8 @@ jobs:
 
     name: ${{ matrix.node-versions }} Prettier
 
+    if: ${{ github.actor != 'dependabot[bot]' }}
+
     runs-on: ${{ matrix.os }}
 
     strategy:
