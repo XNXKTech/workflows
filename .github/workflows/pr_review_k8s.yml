@@ -78,7 +78,7 @@ jobs:
             const output = `✅ Pull Request Deployment for ${{ github.repository }} ready!
             #### 🔨 Latest commit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
             #### 🔍 Latest deploy log: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            #### 😎 Deploy Preview API [https://drm-api-pr-${{ github.event.number }}.virtualstarry.com](https://drm-api-pr-${{ github.event.number }}.virtualstarry.com)`
+            #### 😎 Deploy Preview API [${{ inputs.environment_url }}](${{ inputs.environment_url }})`
 
             // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
