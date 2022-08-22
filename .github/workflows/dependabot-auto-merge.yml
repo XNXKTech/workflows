@@ -18,6 +18,11 @@ on:
         default: true
         required: false
         type: boolean
+      labels:
+        description: The labels to add to the pull-request
+        default: status/need-review
+        required: false
+        type: string
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
@@ -69,4 +74,4 @@ jobs:
       - name: Major change need review
         if: steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
         run: |
-          gh pr edit ${{ github.event.number }} --add-label "status/need-review"
+          gh pr edit ${{ github.event.number }} --add-label "${{ inputs.labels }}"
