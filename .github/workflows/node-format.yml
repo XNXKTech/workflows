@@ -3,6 +3,11 @@ name: Prettier
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       versions:
         description: 'Stringified JSON object listing target Node versions'
         default: "['16']"
@@ -34,11 +39,12 @@ jobs:
 
     name: Prettier
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         node-versions: ${{fromJson(inputs.versions)}}
+        os: ${{ fromJson(inputs.runs-on) }}
 
     steps:
       - uses: actions/checkout@v3.0.2
