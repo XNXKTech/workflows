@@ -10,7 +10,7 @@ on:
         type: string
       reviewers:
         description: 'Stringified JSON object listing target reviewers'
-        default: "[\"XNXKTech/infra\"]"
+        default: "['XNXKTech/infra']"
         required: false
         type: string
       labels:
