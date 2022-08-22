@@ -40,7 +40,7 @@ env:
 jobs:
   prettier:
 
-    name: ${{ matrix.node-versions }} Prettier
+    name: Prettier
 
     if: ${{ github.actor != 'dependabot[bot]' }}
 
