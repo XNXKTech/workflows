@@ -13,6 +13,11 @@ on:
         default: true
         required: false
         type: boolean
+      continue-on-error:
+        description: Continue on error
+        default: true
+        required: false
+        type: boolean
     secrets:
       GH_TOKEN:
         description: 'Personal access token passed from the caller workflow'
@@ -56,6 +61,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
 
       - name: Use GH for merge PR
+        continue-on-error: ${{ inputs.continue-on-error }}
         if: steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
           gh pr merge ${{ github.event.number }} --squash -d
