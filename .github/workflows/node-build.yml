@@ -72,7 +72,6 @@ jobs:
 
       - name: Setup environment variables
         run: |
-          echo "NODE_ENV=${{ steps.environment.outputs.lowercase }}" >> $GITHUB_ENV
           echo "X_ENV=${{ steps.environment.outputs.lowercase }}" >> $GITHUB_ENV
           echo "X_API_URL=${{ inputs.api_url }}" >> $GITHUB_ENV
           echo "${{ env.ENV }}" >> $GITHUB_ENV
