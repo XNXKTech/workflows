@@ -22,22 +22,20 @@
       {
         "preset": "angular",
         "releaseRules": [
-          { "type": "docs", "scope": "README", "release": "patch" },
+          { "type": "docs", "release": "patch" },
           { "type": "refactor", "release": "patch" },
-          { "type": "style", "release": false },
-          { "scope": "no-release", "release": false },
-          { "type": "chore", "release": false },
-          { "type": "build", "release": false }
+          { "type": "cosm", "release": "patch" },
+          { "type": "ci", "release": "patch" }
         ],
         "parserOpts": {
-          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
         }
       }
     ],
     [
       "@semantic-release/release-notes-generator",
       {
-        "preset": "angular",
+        "preset": "conventionalcommits",
         "parserOpts": {
           "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
         },
@@ -45,26 +43,45 @@
           "types": [
             {
               "type": "feat",
-              "section": "Features"
+              "section": ":sparkles: Features"
             },
             {
               "type": "fix",
-              "section": "Bug Fixes"
+              "section": ":bug: Bug Fixes"
             },
             {
-              "type": "chore",
-              "section": "Internal",
+              "type": "docs",
+              "section": ":memo: Documentação",
               "hidden": false
             },
             {
               "type": "refactor",
-              "section": "Internal",
+              "section": ":recycle: Refactor",
               "hidden": false
             },
             {
               "type": "perf",
-              "section": "Internal",
+              "section": ":zap: Performance",
               "hidden": false
+            },
+            {
+              "type": "test",
+              "section": ":white_check_mark: Testes",
+              "hidden": false
+            },
+            {
+              "type": "ci",
+              "section": ":repeat: CI",
+              "hidden": false
+            },
+            {
+              "type": "cosm",
+              "section": ":repeat: Cosmetics",
+              "hidden": false
+            },
+            {
+              "type": "chore",
+              "hidden": true
             }
           ]
         },
