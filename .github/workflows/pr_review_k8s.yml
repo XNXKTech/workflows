@@ -76,7 +76,7 @@ jobs:
 
             // 2. Prepare format of the comment
             const output = `✅ Pull Request Deployment for ${{ github.repository }} ready!
-            #### 🔨 Latest commit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            #### 🔨 Latest commit: [${{ github.event.pull_request.head.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }})
             #### 🔍 Latest deploy log: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             #### 😎 Deploy Preview API [${{ inputs.environment_url }}](${{ inputs.environment_url }})`
 
