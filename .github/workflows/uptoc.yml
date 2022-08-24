@@ -34,7 +34,7 @@ on:
         required: false
         type: string
       exclude:
-        default: .git,.github,.gitignore,README.md,test,images,logo,svg,video,*.html
+        default: .git,.github,.gitignore,README.md,test,images,svg,video,*.html
         required: false
         type: string
       dist:
