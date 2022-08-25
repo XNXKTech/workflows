@@ -71,6 +71,7 @@ jobs:
       - name: Set env
         id: set-env
         run: |
+          echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
           echo ::set-output name=color::${{ inputs.stage == 'PR Review' && 'orange' || 'green' }}
           if ${{ github.event_name == 'release' }} ; then
             echo ::set-output name=changelog::${{ env.CHANGELOG }}
@@ -129,7 +130,7 @@ jobs:
                       {
                         "is_short": true,
                         "text": {
-                          "content": "**🔨  Latest commit：**\n[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})",
+                          "content": "**🔨  Latest commit：**\n[${{ steps.set-env.outputs.sha_short }}](https://github.com/${{ github.repository }}/commit/${{ steps.set-env.outputs.sha_short }})",
                           "tag": "lark_md"
                         }
                       },
