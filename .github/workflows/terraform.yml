@@ -170,18 +170,26 @@ jobs:
         run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} validate
 
       - name: Plan
-        id: plan
+        uses: mathiasvr/command-output@v1
         continue-on-error: ${{ inputs.command_continue_on_error }}
-        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} plan
+        id: plan
+        with:
+          run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} plan
+
+      - name: Format plan
+        id: format-plan
+        run: |
+          plan=$(cat <<'EOF'
+          ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
+          EOF
+          )
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "${plan:0:65536}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Update Pull Request
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
-        env:
-          PLAN: |
-            terraform
-            ${{ steps.plan.outputs.stderr }}
-            ${{ steps.plan.outputs.stdout }}
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
@@ -207,7 +215,9 @@ jobs:
 
             <details><summary>Show Plan</summary>
 
-            \`\`\`${process.env.PLAN}\`\`\`
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
 
             </details>`;
 
