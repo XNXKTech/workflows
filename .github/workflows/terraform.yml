@@ -162,7 +162,7 @@ jobs:
 
       - name: Init
         id: init
-        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} init
+        run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} init -upgrade
 
       - name: Validate
         id: validate
