@@ -13,6 +13,19 @@ on:
         default: "['16']"
         required: false
         type: string
+    secrets:
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
   build:
@@ -63,4 +76,72 @@ jobs:
           HUSKY_SKIP_INSTALL: true
 
       - name: ESLint
-        run: npx eslint . --ext .js,.jsx,.ts,.tsx --quiet
+        uses: mathiasvr/command-output@v1
+        continue-on-error: true
+        id: eslint
+        with:
+          run: npx eslint . --ext .js,.jsx,.ts,.tsx --quiet
+
+      - name: Format plan
+        id: format-plan
+        run: |
+          plan=$(cat <<'EOF'
+          ${{ format('{0}{1}', steps.eslint.outputs.stdout, steps.eslint.outputs.stderr) }}
+          EOF
+          )
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "${plan:0:65536}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ env.GH_TOKEN }}
+          script: |
+            emoji = ("${{ steps.eslint.outcome }}" === "success") ? '✅' : '❌'
+
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const botComment = comments.find(comment => {
+              return comment.body.includes('${{ github.workflow }} Check')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### ${emoji} ${{ github.workflow }} Check
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`ts
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      - name: Status
+        if: steps.eslint.outcome == 'failure'
+        run: |
+        echo "::error ESLint failed"
+        exit 1
