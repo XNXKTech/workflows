@@ -58,16 +58,16 @@ The `versions` and `stability` actually is sequence, to support strategy matrix 
 ```yaml
 uses: XNXKTech/workflows/.github/workflows/laravel-test.yml@main
 with:
-  versions: "[\"8.0\", \"8.1\"]"
-  stability: "[\"prefer-lowest\", \"prefer-stable\"]"
+  versions: "['8.0', '8.1']"
+  stability: "['prefer-lowest', 'prefer-stable']"
 ```
 
 ### Inputs
 
 | input              | required | default                                                                                       | description                                          |
 |--------------------|----------|-----------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `versions`         | ❌        | `'[\"8.0\"]'`                                                                                 | Stringified JSON object listing target PHP versions  |
-| `stability`        | ❌        | `'[\"prefer-stable\"]'`                                                                       | Stringified JSON object listing target PHP stability |
+| `versions`         | ❌        | `"['8.0']"`                                                                                   | Stringified JSON object listing target PHP versions  |
+| `stability`        | ❌        | `"['prefer-stable']"`                                                                         | Stringified JSON object listing target PHP stability |
 | `command`          | ❌        |                                                                                               | Command to prepare Laravel Application               |
 | `database`         | ❌        | `postgres:12.4-alpine`                                                                        | Database to use for testing                          |
 | `db_user`          | ❌        | `postgres`                                                                                    | Database user to use for testing                     |
@@ -82,15 +82,41 @@ with:
 ```yaml
 uses: XNXKTech/workflows/.github/workflows/laravel-insights.yml@main
 with:
-  versions: "[\"8.0\", \"8.1\"]"
-  stability: "[\"prefer-lowest\", \"prefer-stable\"]"
+  versions: "['8.0', '8.1']"
+  stability: "['prefer-lowest', 'prefer-stable']"
 ```
 
 ## ACME
 
 ## Cloudbase
 
+```yaml
+  cloudbase:
+    name: TCB
+    uses: XNXKTech/workflows/.github/workflows/cloudbase.yml@main
+    with:
+      environment: Production
+      environment_url: https://www.xnxk.com
+    secrets:
+      SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+      SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+      ENV_ID: ${{ secrets.ENV_ID }}
+```
+
 ## Terraform
+
+```yaml
+  terraform:
+    name: Terraform
+    uses: XNXKTech/workflows/.github/workflows/terraform.yml@main
+    with:
+      directory: "['github/teams']"
+      env: TF_VAR_organization=XNXKTech
+    secrets:
+      GH_TOKEN: ${{ secrets.CI_PAT }}
+      TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+      TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+```
 
 ## Auto Merge
 
