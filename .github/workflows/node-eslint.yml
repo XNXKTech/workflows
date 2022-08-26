@@ -143,5 +143,4 @@ jobs:
       - name: Status
         if: steps.eslint.outcome == 'failure'
         run: |
-        echo "::error ESLint failed"
-        exit 1
+          exit 1
