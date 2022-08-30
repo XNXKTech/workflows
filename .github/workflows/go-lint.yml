@@ -1,0 +1,98 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
+      go-version:
+        description: Stringified JSON object listing target Go versions
+        default: "['1.x']"
+        required: false
+        type: string
+      golangci-lint-version:
+        description: Stringified JSON object listing target Golangci-lint versions
+        default: "['1.44.0']"
+        required: false
+        type: string
+      goproxy:
+        description: GoProxy
+        default: "https://proxy.golang.org"
+        required: false
+        type: string
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      env:
+        description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
+        type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
+        default: ''
+        required: false
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+
+env:
+  GOPROXY: ${{ inputs.goproxy }}
+
+jobs:
+  lint:
+    name: ${{ matrix.go-version }}
+
+    timeout-minutes: ${{ inputs.timeout }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
+        go-version: ${{ fromJson(inputs.go-version) }}
+        include:
+          # only update test coverage stats with the most recent go version on linux
+          - go-version: 1.x
+            platform: ubuntu-latest
+            update-coverage: true
+
+      fail-fast: ${{ inputs.fail-fast }}
+
+    steps:
+      - name: Setup environment variables
+        run: |
+          echo "${{ env.ENV }}" >> $GITHUB_ENV
+
+      - name: Environment
+        run: env | sort
+
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc #v3.2.0
+        with:
+          version: v${{ fromJson(inputs.golangci-lint-version) }}
+          args: --verbose
