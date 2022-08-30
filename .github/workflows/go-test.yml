@@ -1,0 +1,123 @@
+name: Tests
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
+      go-version:
+        description: Stringified JSON object listing target Go versions
+        default: "['1.18.x']"
+        required: false
+        type: string
+      golangci-lint-version:
+        description: Stringified JSON object listing target Golangci-lint versions
+        default: "['1.44.0']"
+        required: false
+        type: string
+      module:
+        description: The go 11 module to use for the workflow
+        default: true
+        required: false
+        type: boolean
+      goproxy:
+        description: GoProxy
+        default: "https://proxy.golang.org"
+        required: false
+        type: string
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      env:
+        description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
+        type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
+        default: ''
+        required: false
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  GO111MODULE: ${{ inputs.module == true && 'on' || 'off' }}
+  GOPROXY: ${{ inputs.goproxy }}
+
+jobs:
+  lint:
+    name: ${{ matrix.go-version }}
+
+    timeout-minutes: ${{ inputs.timeout }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
+        go-version: ${{ fromJson(inputs.go-version) }}
+
+      fail-fast: ${{ inputs.fail-fast }}
+
+    steps:
+      - name: Setup environment variables
+        run: |
+          echo "${{ env.ENV }}" >> $GITHUB_ENV
+
+      - name: Environment
+        run: env | sort
+
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      # Get values for cache paths to be used in later steps
+      - name: Get cache directory
+        id: cache-paths
+        run: |
+          echo "::set-output name=go-cache::$(go env GOCACHE)"
+          echo "::set-output name=go-mod-cache::$(go env GOMODCACHE)"
+
+      - name: Cache go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ steps.cache-paths.outputs.go-cache }}
+            ${{ steps.cache-paths.outputs.go-mod-cache }}
+          key: dependencies-go-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: dependencies-go-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test with Go
+        run: go test -json > TestResults-${{ matrix.go-version }}.json
+
+      - name: Upload Go test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: Go-results-${{ matrix.go-version }}
+          path: TestResults-${{ matrix.go-version }}.json
