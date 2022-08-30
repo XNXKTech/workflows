@@ -95,32 +95,32 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - uses: pnpm/action-setup@v2.2.2
-        if: ${{ input.pm }} == 'pnpm'
+        if: inputs.pm == 'pnpm'
         with:
           version: 7
           run_install: false
 
       - name: Setup yarn
-        if: ${{ input.pm }} == 'yarn'
+        if: inputs.pm == 'yarn'
         run: npm install -g yarn
 
       - name: Setup Nodejs ${{ matrix.node }}
         uses: actions/setup-node@v3.4.1
         with:
           node-version: ${{ matrix.node }}
-          cache: ${{ input.pm }}
+          cache: ${{ inputs.pm }}
 
-      - name: Setup ${{ input.pm }} cache
+      - name: Setup ${{ inputs.pm }} cache
         uses: actions/cache@v3.0.8
         id: node-modules-cache
         with:
           path: |
             node_modules
-          key: dependencies-node-${{ matrix.node }}-${{ input.pm }}-${{ hashFiles('**/yarn.lock') }}
+          key: dependencies-node-${{ matrix.node }}-${{ inputs.pm }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            dependencies-node-${{ matrix.node }}-${{ input.pm }}
+            dependencies-node-${{ matrix.node }}-${{ inputs.pm }}
 
-      - name: Install dependencies with ${{ input.pm }}
+      - name: Install dependencies with ${{ inputs.pm }}
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         env:
