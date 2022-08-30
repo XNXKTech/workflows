@@ -1,0 +1,63 @@
+name: CodeQL
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
+      language:
+        default: "['javascript']"
+        description: The language to run the analysis on
+        required: false
+        type: string
+
+jobs:
+  analyze:
+    name: Analyze
+
+    timeout-minutes: ${{ inputs.timeout }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
+        # Override automatic language detection by changing the below list
+        # Supported options are ['csharp', 'cpp', 'go', 'java', 'javascript', 'python']
+        language: ${{ fromJson(inputs.language) }}
+
+      fail-fast: ${{ inputs.fail-fast }}
+
+    permissions:
+      # required for all workflows
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
+          # queries: ./path/to/local/query, your-org/your-repo/queries@main
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
