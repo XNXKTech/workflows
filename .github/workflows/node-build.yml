@@ -13,6 +13,11 @@ on:
         default: "['16']"
         required: false
         type: string
+      pm:
+        description: 'package manager'
+        default: yarn
+        required: false
+        type: string
       env:
         description: Environment variables in key=value pairs. Can be used to pass secrets that aren't officially supported yet as environment variables
         type: string  # pass in string in export shell format eg. MYVAR=myvalue MYVAR2=myvalue2
@@ -89,25 +94,33 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - uses: pnpm/action-setup@v2.2.2
+        if: ${{ input.pm }} == 'pnpm'
+        with:
+          version: 7
+          run_install: false
+
       - name: Setup yarn
+        if: ${{ input.pm }} == 'yarn'
         run: npm install -g yarn
 
-      - name: Setup Nodejs with yarn caching
+      - name: Setup Nodejs ${{ matrix.node }}
         uses: actions/setup-node@v3.4.1
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
+          cache: ${{ input.pm }}
 
-      - uses: actions/cache@v3.0.8
+      - name: Setup ${{ input.pm }} cache
+        uses: actions/cache@v3.0.8
         id: node-modules-cache
         with:
           path: |
             node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: dependencies-node-${{ matrix.node }}-${{ input.pm }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn
+            dependencies-node-${{ matrix.node }}-${{ input.pm }}
 
-      - name: Install package.json dependencies with Yarn
+      - name: Install dependencies with ${{ input.pm }}
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         env:
