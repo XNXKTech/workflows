@@ -47,6 +47,11 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Set env
+        id: set-env
+        run: |
+          echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
+
       - name: Update instead
         run: |
           sed -i 's/{prid}/${{ github.event.number }}/g' ${{ inputs.deployment }}
@@ -79,7 +84,7 @@ jobs:
             const output = `### <span aria-hidden="true">✅</span> Deploy Preview for ${{ github.repository }} ready!
             |  Name | Link |
             |---------------------------------|------------------------|
-            |<span aria-hidden="true">🔨</span> Latest commit | [\`${{ github.event.pull_request.head.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
+            |<span aria-hidden="true">🔨</span> Latest commit | [\`${{ steps.set-env.outputs.sha_short }}\`](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
             |<span aria-hidden="true">🔍</span> Latest deploy log | [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
             |<span aria-hidden="true">😎</span> Deploy Preview | [${{ inputs.environment_url }}](${{ inputs.environment_url }}) |`
 
