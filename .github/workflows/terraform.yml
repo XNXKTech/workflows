@@ -214,14 +214,15 @@ jobs:
             |<span aria-hidden="true">🖌</span> Format and Style | \`${{ steps.fmt.outcome }}\` |
             |<span aria-hidden="true">⚙️</span> Initialization | \`${{ steps.init.outcome }}\` |
             |<span aria-hidden="true">🤖</span> Validation | \`${{ steps.validate.outcome }}\` |
-            |<span aria-hidden="true">📖</span> Plan | \`${{ steps.plan.outcome }}\`
-             <details><summary>Show Plan</summary>
+            |<span aria-hidden="true">📖</span> Plan | \`${{ steps.plan.outcome }}\` |
 
-              \`\`\`terraform
-              ${process.env.PLAN}
-              \`\`\`
+            ---
+            <details><summary>Show Plan</summary>
 
-              </details>|`;
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
+            </details>`;
 
             // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
