@@ -47,9 +47,10 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Update instead of prid
-        id: prid
-        run: sed -i 's/{prid}/${{ github.event.number }}/g' ${{ inputs.deployment }}
+      - name: Update instead
+        run: |
+          sed -i 's/{prid}/${{ github.event.number }}/g' ${{ inputs.deployment }}
+          sed -i 's/{build-id}/${{ github.run_id }}/g' ${{ inputs.deployment }} || true
 
       - name: Deploy Environment
         uses: starubiquitous/kubectl@master
