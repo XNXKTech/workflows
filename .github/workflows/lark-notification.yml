@@ -77,7 +77,7 @@ jobs:
             echo ::set-output name=changelog::${{ env.CHANGELOG }}
           fi
           if ${{ github.event_name == 'pull_request' }} ; then
-            echo ::set-output name=changelog::${{ github.event.pull_request.title }}
+            echo ::set-output name=changelog::'${{ github.event.pull_request.title }}'
           fi
           if ${{ github.event_name == 'push' }} ; then
             echo ::set-output name=changelog::${{ github.event.head_commit.message }}
