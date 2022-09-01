@@ -71,14 +71,16 @@ jobs:
             })
 
             const botComment = comments.find(comment => {
-              return comment.body.includes('✅ Pull Request Deployment')
+              return comment.body.includes('Deploy Preview for')
             })
 
             // 2. Prepare format of the comment
-            const output = `✅ Pull Request Deployment for ${{ github.repository }} ready!
-            #### 🔨 Latest commit: [${{ github.event.pull_request.head.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }})
-            #### 🔍 Latest deploy log: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            #### 😎 Deploy Preview API [${{ inputs.environment_url }}](${{ inputs.environment_url }})`
+            const output = `### <span aria-hidden="true">✅</span> Deploy Preview for ${{ github.repository }} ready!
+            |  Name | Link |
+            |---------------------------------|------------------------|
+            |<span aria-hidden="true">🔨</span> Latest commit | [${{ github.event.pull_request.head.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
+            |<span aria-hidden="true">🔍</span> Latest deploy log | [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+            |<span aria-hidden="true">😎</span> Deploy Preview | [${{ inputs.environment_url }}](${{ inputs.environment_url }}) |`
 
             // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
