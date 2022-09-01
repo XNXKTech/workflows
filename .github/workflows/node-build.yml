@@ -84,7 +84,8 @@ jobs:
       - name: Environment
         run: env | sort
 
-      - uses: actions/checkout@v3.0.2
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 1
           ref: ${{ github.head_ref }}
@@ -94,7 +95,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - uses: pnpm/action-setup@v2.2.2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.2
         if: inputs.pm == 'pnpm'
         with:
           version: 7
@@ -110,19 +112,31 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: ${{ inputs.pm }}
 
+      - name: Get ${{ inputs.pm }} store directory
+        id: cache-dir
+        run: |
+          if ${{ inputs.pm == 'yarn' }} ; then
+            echo "::set-output name=path::$(yarn cache dir)"
+            echo "::set-output name=key::dependencies-node-${{ matrix.node }}-${{ inputs.pm }}-${{ hashFiles('**/yarn.lock') }}"
+          fi
+          if ${{ inputs.pm == 'pnpm' }} ; then
+            echo "::set-output name=path::$(pnpm store path)"
+            echo "::set-output name=key::dependencies-node-${{ matrix.node }}-${{ inputs.pm }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+          fi
+
       - name: Setup ${{ inputs.pm }} cache
         uses: actions/cache@v3.0.8
         id: node-modules-cache
         with:
           path: |
-            node_modules
-          key: dependencies-node-${{ matrix.node }}-${{ inputs.pm }}-${{ hashFiles('**/yarn.lock') }}
+            ${{ steps.cache-dir.outputs.path }}
+          key: ${{ steps.cache-dir.outputs.key }}
           restore-keys: |
             dependencies-node-${{ matrix.node }}-${{ inputs.pm }}
 
       - name: Install dependencies with ${{ inputs.pm }}
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
+        run: ${{ inputs.pm }} ${{ inputs.pm == 'yarn' && '--frozen-lockfile' || 'install' }}
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
@@ -139,4 +153,4 @@ jobs:
         if: steps.build-cache.outputs.cache-hit != 'true'
         env:
           DISABLE_ESLINT_PLUGIN: ${{ inputs.eslint }}
-        run: yarn build
+        run: ${{ inputs.pm }} build
