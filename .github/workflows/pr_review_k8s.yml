@@ -79,7 +79,7 @@ jobs:
             const output = `### <span aria-hidden="true">✅</span> Deploy Preview for ${{ github.repository }} ready!
             |  Name | Link |
             |---------------------------------|------------------------|
-            |<span aria-hidden="true">🔨</span> Latest commit | [${{ github.event.pull_request.head.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
+            |<span aria-hidden="true">🔨</span> Latest commit | [\`${{ github.event.pull_request.head.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
             |<span aria-hidden="true">🔍</span> Latest deploy log | [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
             |<span aria-hidden="true">😎</span> Deploy Preview | [${{ inputs.environment_url }}](${{ inputs.environment_url }}) |`
 
