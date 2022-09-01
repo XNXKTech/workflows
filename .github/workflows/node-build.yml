@@ -136,7 +136,7 @@ jobs:
 
       - name: Install dependencies with ${{ inputs.pm }}
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
-        run: ${{ inputs.pm }} ${{ inputs.pm == 'yarn' && '--frozen-lockfile' || 'install' }}
+        run: ${{ inputs.pm }} ${{ inputs.pm == 'pnpm' && 'i' || ' ' }} --frozen-lockfile
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
