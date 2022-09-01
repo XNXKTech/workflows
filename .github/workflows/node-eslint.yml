@@ -115,7 +115,7 @@ jobs:
             // 2. Prepare format of the comment
             const output = `#### ${emoji} ${{ github.workflow }} Check
 
-            <details><summary>Show Plan</summary>
+            <details><summary>Show Details</summary>
 
             \`\`\`ts
             ${process.env.PLAN}
