@@ -72,7 +72,7 @@ jobs:
             })
 
             const botComment = comments.find(comment => {
-              return comment.body.includes('Deploy Preview for')
+              return comment.body.includes('✅ Deploy Preview for')
             })
 
             // 2. Prepare format of the comment
