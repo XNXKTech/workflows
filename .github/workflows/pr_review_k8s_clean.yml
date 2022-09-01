@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deployment:
-        default: pr.yaml
+        default: .k8s/preview.yaml
         description: The deployment file to use for the PR review.
         type: string
         required: false
