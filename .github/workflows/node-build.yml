@@ -129,6 +129,7 @@ jobs:
         id: node-modules-cache
         with:
           path: |
+            node_modules
             ${{ steps.cache-dir.outputs.path }}
           key: ${{ steps.cache-dir.outputs.key }}
           restore-keys: |
