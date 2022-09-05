@@ -110,11 +110,11 @@ jobs:
             })
 
             const botComment = comments.find(comment => {
-              return comment.body.includes('${{ github.workflow }} Check')
+              return comment.body.includes('Eslint Check')
             })
 
             // 2. Prepare format of the comment
-            const output = `#### ${emoji} ${{ github.workflow }} Check
+            const output = `#### ${emoji} Eslint Check
 
             <details><summary>Show Details</summary>
 
