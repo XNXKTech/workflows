@@ -84,6 +84,7 @@ jobs:
 
       - name: Format plan
         id: format-plan
+        if: github.event_name == 'pull_request'
         run: |
           plan=$(cat <<'EOF'
           ${{ format('{0}{1}', steps.eslint.outputs.stdout, steps.eslint.outputs.stderr) }}
