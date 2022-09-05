@@ -53,6 +53,19 @@ on:
         description: "Whether to fail fast or not"
         required: false
         type: boolean
+    secrets:
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
 jobs:
   build:
@@ -151,7 +164,75 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.build_dir }}-${{ github.sha }}
 
       - name: Build
+        uses: mathiasvr/command-output@v1
+        continue-on-error: true
         if: steps.build-cache.outputs.cache-hit != 'true'
+        id: build
         env:
           DISABLE_ESLINT_PLUGIN: ${{ inputs.eslint }}
-        run: ${{ inputs.pm }} build
+        with:
+          run: ${{ inputs.pm }} build
+
+      - name: Format output
+        id: format-output
+        if: github.event_name == 'pull_request'
+        run: |
+          plan=$(cat <<'EOF'
+          ${{ format('{0}{1}', steps.build.outputs.stdout, steps.build.outputs.stderr) }}
+          EOF
+          )
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "${plan:0:65536}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ env.GH_TOKEN }}
+          script: |
+            emoji = ("${{ steps.build.outcome }}" === "success") ? '✅' : '❌'
+
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const botComment = comments.find(comment => {
+              return comment.body.includes('${{ github.workflow }}')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### ${emoji} ${{ github.workflow }}
+
+            <details><summary>Show Details</summary>
+
+            \`\`\`ts
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      - name: Status
+        if: steps.build.outcome == 'failure'
+        run: |
+          exit 1
