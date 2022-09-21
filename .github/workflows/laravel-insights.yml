@@ -3,6 +3,11 @@ name: Laravel Insights
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       versions:
         description: 'Stringified JSON object listing target PHP versions'
         default: "['8.0']"
@@ -66,10 +71,11 @@ jobs:
   ci:
     name: ${{ matrix.php-versions }} - ${{ matrix.stability }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
         php-versions: ${{fromJson(inputs.versions)}}
         stability: ${{fromJson(inputs.stability)}}
 
@@ -113,31 +119,11 @@ jobs:
         uses: actions/cache@v3.0.8
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Set Minimum PHP 8.0 Versions
-        uses: nick-invision/retry@v2.8.1
-        with:
-          timeout_minutes: 5
-          max_attempts: 5
-          command: composer require guzzlehttp/guzzle:^7.2 --no-interaction --no-update
-        if: matrix.php-versions >= 8
-
-      - name: Set Minimum PHP 8.1 Versions
-        uses: nick-invision/retry@v2.8.1
-        with:
-          timeout_minutes: 5
-          max_attempts: 5
-          command: composer require symfony/symfony:5.4.x-dev league/commonmark:^2.0.2 phpunit/phpunit:^9.5.8 --no-interaction --no-update
-        if: matrix.php-versions >= 8.1
+          key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: dependencies-php-${{ matrix.php }}-composer-
 
       - name: Install dependencies
-        uses: nick-invision/retry@v2.8.1
-        with:
-          timeout_minutes: 5
-          max_attempts: 5
-          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+        run: composer install --prefer-dist --no-interaction --optimize-autoloader
 
       - name: Prepare Laravel Application
         run: ${{ inputs.command }}
