@@ -8,7 +8,7 @@ on:
         description: The OSs that the workflow is run on
         required: false
         type: string
-      node-version:
+      versions:
         description: 'Stringified JSON object listing target Node versions'
         default: "['16']"
         required: false
