@@ -77,7 +77,7 @@ jobs:
     strategy:
       matrix:
         os: ${{fromJson(inputs.runs-on)}}
-        node: ${{fromJson(inputs.node-version)}}
+        node: ${{fromJson(inputs.versions)}}
 
       fail-fast: ${{ inputs.fail-fast }}
 
