@@ -129,7 +129,7 @@ jobs:
           msg: ${{ github.ref }}
 
       - name: Checkout ${{ steps.split.outputs._2 }}
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           ref: ${{ (github.event_name == 'pull_request' || contains(github.actor, 'bot')) && github.event.pull_request.head.sha  || steps.split.outputs._2 }}
           submodules: 'true'
