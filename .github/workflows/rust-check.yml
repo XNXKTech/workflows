@@ -29,7 +29,7 @@ jobs:
         with:
           rust-version: ${{ matrix.versions }}
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - run: cargo check --verbose --workspace --all-features
 
