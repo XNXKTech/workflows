@@ -30,7 +30,7 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.versions }}
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - run: cargo build --release
 
