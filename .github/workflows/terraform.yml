@@ -50,7 +50,7 @@ on:
         type: string
       apply_args:
         description: Terraform apply command arguments
-        default: "-auto-approve -no-color -input=false"
+        default: "-auto-approve -no-color -input=false -lock=false -compact-warnings"
         required: false
         type: string
       terraform_root:
