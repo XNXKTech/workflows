@@ -35,7 +35,7 @@ on:
         type: string
       init_args:
         description: Terraform init command arguments
-        default: "-input=false"
+        default: " "
         required: false
         type: string
       validate_args:
@@ -45,12 +45,12 @@ on:
         type: string
       plan_args:
         description: Terraform plan command arguments
-        default: "-no-color -input=false -lock=false"
+        default: " "
         required: false
         type: string
       apply_args:
         description: Terraform apply command arguments
-        default: "-auto-approve -no-color -input=false -lock=false -compact-warnings"
+        default: " "
         required: false
         type: string
       terraform_root:
@@ -97,10 +97,10 @@ defaults:
 env:
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   TF_CLI_ARGS_fmt: ${{ inputs.fmt_args }}
-  TF_CLI_ARGS_init: ${{ inputs.init_args }}
+  TF_CLI_ARGS_init: -input=false ${{ inputs.init_args }}
   TF_CLI_ARGS_validate: ${{ inputs.validate_args }}
-  TF_CLI_ARGS_plan: ${{ inputs.plan_args }}
-  TF_CLI_ARGS_apply: ${{ inputs.apply_args }}
+  TF_CLI_ARGS_plan: -no-color -input=false -lock=false ${{ inputs.plan_args }}
+  TF_CLI_ARGS_apply: -no-color -input=false -lock=false -auto-approve -compact-warnings ${{ inputs.apply_args }}
   TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
   TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
   ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
