@@ -170,7 +170,7 @@ jobs:
         run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} validate
 
       - name: Plan
-        uses: mathiasvr/command-output@v1
+        uses: StarUbiquitous/command-output@v1.0.1
         continue-on-error: ${{ inputs.command_continue_on_error }}
         id: plan
         with:

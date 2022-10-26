@@ -76,7 +76,7 @@ jobs:
           HUSKY_SKIP_INSTALL: true
 
       - name: ESLint
-        uses: mathiasvr/command-output@v1
+        uses: StarUbiquitous/command-output@v1.0.1
         continue-on-error: true
         id: eslint
         with:

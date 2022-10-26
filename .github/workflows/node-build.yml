@@ -164,7 +164,7 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.build_dir }}-${{ github.sha }}
 
       - name: Build
-        uses: mathiasvr/command-output@v1
+        uses: StarUbiquitous/command-output@v1.0.1
         continue-on-error: true
         if: steps.build-cache.outputs.cache-hit != 'true'
         id: build
