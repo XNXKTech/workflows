@@ -84,7 +84,7 @@ jobs:
     steps:
       - name: Setup env name to lowercase
         id: environment
-        uses: ASzc/change-string-case-action@v3
+        uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ inputs.environment }}
 

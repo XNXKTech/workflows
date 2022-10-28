@@ -77,7 +77,7 @@ jobs:
     steps:
       - name: Setup repo name to lowercase
         id: reponame
-        uses: ASzc/change-string-case-action@v3
+        uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ github.repository }}
 
@@ -136,7 +136,7 @@ jobs:
 
       - name: Setup repo name to lowercase
         id: reponame
-        uses: ASzc/change-string-case-action@v3
+        uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ github.repository }}
 
