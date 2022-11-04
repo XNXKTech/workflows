@@ -246,6 +246,6 @@ jobs:
         run: exit 1
 
       - name: Apply
-        if: contains(steps.plan.outputs.stdout,'No changes.') == false && github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(steps.plan.outputs.stdout,'No changes.') == false && github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: apply
         run: terraform -chdir=${{ inputs.terraform_root }}/${{ matrix.directory }} apply
