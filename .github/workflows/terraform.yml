@@ -192,7 +192,7 @@ jobs:
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             emoji = ("${{ steps.plan.outcome }}" === "success") ? '✅' : '❌'
 
