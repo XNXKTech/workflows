@@ -82,7 +82,7 @@ jobs:
         id: check
         run: ansible-playbook -i hosts --private-key=.ssh/id_rsa_ansible playbook.yml --check --verbose
 
-      - uses: actions/github-script@v6.0.0
+      - uses: actions/github-script@v6.3.3
         if: github.event_name == 'pull_request'
         env:
           CHECK: "ansible\n${{ steps.check.outputs.stdout }}"

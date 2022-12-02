@@ -78,7 +78,7 @@ jobs:
           UPTOC_UPLOADER_SK: ${{ secrets.TENCENTCLOUD_COS_SECRET_KEY }}
 
       - name: Update Pull Request
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.3.3
         if: github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.CI_PAT }}
