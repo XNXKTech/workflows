@@ -1,0 +1,129 @@
+name: Ansible
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
+      timeout:
+        default: 10
+        description: The number of minutes to wait for the operation to complete.
+        required: false
+        type: number
+      fail-fast:
+        default: false
+        description: "Whether to fail fast or not"
+        required: false
+        type: boolean
+    secrets:
+      GH_TOKEN:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+  token: ${{ secrets.GH_TOKEN == '' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
+jobs:
+  lint:
+    name: Lint
+    timeout-minutes: ${{ inputs.timeout }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
+
+      fail-fast: ${{ inputs.fail-fast }}
+
+    steps:
+      - name: Environment
+        run: env | sort
+
+      - name: Checkout
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref }}
+
+      - name: Lint Ansible Playbook
+        id: lint
+        uses: ansible/ansible-lint-action@v6.8.2
+        with:
+          targets: "playbook.yml"
+          args: "-c .ansible-lint"
+
+      - name: Install Requirements
+        id: requirements
+        run: ansible-galaxy install -r requirements.yml
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SERVER_SSH_PRIV_KEY }}
+          name: id_rsa
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          if_key_exists: replace
+          config: |
+            Host *
+              StrictHostKeyChecking=no
+
+      - name: Contact remote host
+        run: ansible all -i hosts -m ping
+
+      - name: Check Playbook
+        id: check
+        run: ansible-playbook -i hosts --private-key=.ssh/id_rsa_ansible playbook.yml --check --verbose
+
+      - uses: actions/github-script@v6.0.0
+        if: github.event_name == 'pull_request'
+        env:
+          CHECK: "ansible\n${{ steps.check.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const botComment = comments.find(comment => {
+              return comment.body.includes('Ansible Lint')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Ansible Lint
+
+            <details><summary>Show Details</summary>
+
+            \`\`\`ansible
+            ${process.env.CHECK}
+            \`\`\`
+
+            </details>`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
