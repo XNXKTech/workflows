@@ -72,7 +72,7 @@ jobs:
       - run: ${{inputs.build_command}}
 
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.2
+        uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: './output/dist'
           github-token: ${{ secrets.CI_PAT }}
