@@ -49,7 +49,7 @@ jobs:
 
       - name: Automatic Rebase
         if: github.event.issue.state == 'open' && github.event.issue.locked == false && github.event.issue.draft == false
-        uses: cirrus-actions/rebase@1.7
+        uses: cirrus-actions/rebase@1.8
 
       - name: Comment
         if: github.event.comment.user.login != ${{ inputs.bot }}
