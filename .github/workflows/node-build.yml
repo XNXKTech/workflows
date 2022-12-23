@@ -138,7 +138,7 @@ jobs:
           fi
 
       - name: Setup ${{ inputs.pm }} cache
-        uses: actions/cache@v3.2.0
+        uses: actions/cache@v3.2.1
         id: node-modules-cache
         with:
           path: |
@@ -156,7 +156,7 @@ jobs:
           HUSKY_SKIP_INSTALL: true
 
       - name: Cache build
-        uses: actions/cache@v3.2.0
+        uses: actions/cache@v3.2.1
         id: build-cache
         with:
           path: |
