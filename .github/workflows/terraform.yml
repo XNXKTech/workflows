@@ -148,7 +148,7 @@ jobs:
         run: mkdir --parents ${{ github.workspace }}/.terraform.d/plugin-cache
 
       - name: Cache Terraform dependencies
-        uses: actions/cache@v3.2.1
+        uses: actions/cache@v3.2.2
         with:
           path: ${{ github.workspace }}/.terraform.d/plugin-cache
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
