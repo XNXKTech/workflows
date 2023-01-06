@@ -61,7 +61,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Setup Node ${{ matrix.node }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ matrix.node }}
 
@@ -69,7 +69,7 @@ jobs:
         run: npm install -g yarn
 
       - name: Setup Nodejs with yarn caching
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ matrix.node }}
           cache: yarn
