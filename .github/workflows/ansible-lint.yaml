@@ -55,7 +55,7 @@ jobs:
 
       - name: Lint Ansible Playbook
         id: lint
-        uses: ansible/ansible-lint-action@v6.10.2
+        uses: ansible/ansible-lint-action@v6.11.0
         with:
           targets: "playbook.yml"
           args: "-c .ansible-lint"
