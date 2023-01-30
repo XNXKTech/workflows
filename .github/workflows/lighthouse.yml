@@ -44,7 +44,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: yarn
 
-      - uses: actions/cache@v3.2.3
+      - uses: actions/cache@v3.2.4
         id: node-modules-cache
         with:
           path: |
