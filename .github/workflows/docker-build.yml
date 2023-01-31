@@ -183,7 +183,7 @@ jobs:
           password: ${{ env.TCR_PASSWORD }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           build-args: ${{ inputs.build-args }}
           context: ${{ inputs.context }}
