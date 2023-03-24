@@ -98,7 +98,7 @@ jobs:
         run: env | sort
 
       - name: Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 1
           ref: ${{ github.head_ref }}
