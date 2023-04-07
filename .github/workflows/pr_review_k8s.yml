@@ -65,7 +65,7 @@ jobs:
           args: --insecure-skip-tls-verify apply -f ${{ inputs.deployment }}
 
       - name: Post comment to Pull Request
-        uses: actions/github-script@v6.4.0
+        uses: actions/github-script@v6.4.1
         with:
           github-token: ${{ env.GH_TOKEN }}
           script: |
