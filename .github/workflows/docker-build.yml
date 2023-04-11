@@ -151,12 +151,13 @@ jobs:
           images: |
             ${{ needs.determine_registries.outputs.registry != '' && needs.determine_registries.outputs.registry || steps.reponame.outputs.lowercase }}
           tags: |
-            ${{ inputs.custom-tag != '' && inputs.custom-tag || '' }}
+            ${{ inputs.custom-tag != '' && inputs.custom-tag 
+            || 
             type=schedule
             type=ref,event=branch
             type=ref,event=tag
             type=ref,event=pr
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}} }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
