@@ -144,22 +144,30 @@ jobs:
         with:
           string: ${{ github.repository }}
 
-      - name: Docker meta
+      - name: Docker meta custom
+        if: inputs.custom-tag != ''
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: |
             ${{ needs.determine_registries.outputs.registry != '' && needs.determine_registries.outputs.registry || steps.reponame.outputs.lowercase }}
           tags: |
-            ${{ if inputs.custom-tag != '' }}
-              ${{ inputs.custom-tag }}
-            ${{ else }}
-              type=schedule
-              type=ref,event=branch
-              type=ref,event=tag
-              type=ref,event=pr
-              type=raw,value=latest,enable={{is_default_branch}}
-            ${{ endif }}
+            ${{ inputs.custom-tag }}
+
+      - name: Docker meta
+        if: inputs.custom-tag == ''
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ needs.determine_registries.outputs.registry != '' && needs.determine_registries.outputs.registry || steps.reponame.outputs.lowercase }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
