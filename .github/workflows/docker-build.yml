@@ -146,7 +146,7 @@ jobs:
 
       - name: Docker meta custom
         if: inputs.custom-tag != ''
-        id: meta
+        id: meta-custom
         uses: docker/metadata-action@v4
         with:
           images: |
@@ -204,8 +204,8 @@ jobs:
           context: ${{ inputs.context }}
           platforms: ${{ inputs.platforms }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-custom.outputs.tags || steps.meta.outputs.tags }}
+          labels: ${{ steps.meta-custom.outputs.labels || steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
