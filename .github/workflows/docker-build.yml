@@ -153,11 +153,11 @@ jobs:
           tags: |
             ${{ inputs.custom-tag != '' && inputs.custom-tag 
             || 
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-            type=raw,value=latest,enable={{is_default_branch}} }}
+            'type=schedule'
+            'type=ref,event=branch'
+            'type=ref,event=tag'
+            'type=ref,event=pr'
+            'type=raw,value=latest,enable={{is_default_branch}}' }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
