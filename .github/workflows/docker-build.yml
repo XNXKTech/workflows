@@ -18,6 +18,10 @@ on:
         description: 'Docker registry'
         required: false
         type: string
+      custom-tag:
+        default: ''
+        required: false
+        type: string
       context:
         type: string
         default: .
@@ -147,6 +151,7 @@ jobs:
           images: |
             ${{ needs.determine_registries.outputs.registry != '' && needs.determine_registries.outputs.registry || steps.reponame.outputs.lowercase }}
           tags: |
+            ${{ inputs.custom-tag != '' && inputs.custom-tag || '' }}
             type=schedule
             type=ref,event=branch
             type=ref,event=tag
