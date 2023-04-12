@@ -22,6 +22,10 @@ on:
         default: ''
         required: false
         type: string
+      dockerfile:
+        default: 'Dockerfile'
+        required: false
+        type: string
       context:
         type: string
         default: .
@@ -200,6 +204,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
+          file: ${{ inputs.dockerfile }}
           build-args: ${{ inputs.build-args }}
           context: ${{ inputs.context }}
           platforms: ${{ inputs.platforms }}
