@@ -85,7 +85,7 @@ jobs:
           key: ${{ inputs.cache-key }}
 
       - name: Cache extensions
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -104,7 +104,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
