@@ -27,7 +27,7 @@ on:
         type: string
       extensions:
         description: 'List of PHP extensions to install'
-        default: 'dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp'
+        default: 'dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, memcached, gmp, bcmath'
         required: false
         type: string
       coverage:
