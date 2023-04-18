@@ -198,8 +198,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.registry }}
-          username: ${{ env.TCR_USERNAME }}
-          password: ${{ env.TCR_PASSWORD }}
+          username: 100024210916
+          password: "eyJhbGciOiJSUzI1NiIsImtpZCI6IkdGQ1Q6UDdHRDpKQTY1OlBES0E6U0RMSjpTN0FTOlMzSUU6NFJHMzpaQzdZOlZOUkY6SU1WQzpZUzRaIn0.eyJvd25lclVpbiI6IjEwMDAyMjI2MTQ2NCIsIm9wZXJhdG9yVWluIjoiMTAwMDI0MjEwOTE2IiwidG9rZW5JZCI6ImNndjRmcm50aDExczRzM2FqbHEwIiwiZXhwIjoxOTk3MTYzMjQ2LCJuYmYiOjE2ODE4MDMyNDYsImlhdCI6MTY4MTgwMzI0Nn0.SK69lLM8lhQYKukkfl5UWNuaoG0wAmWQayBub6NXGhYM97qdu4uqzL7XIB93_RM9rjtw2pwdjUxhd4xNcb770-YoVkH7oWxj7ZReQxCsKpoehiYeI2CmYVJHnkxa5TWoVDZW8iCxA5x_T6XKxIhO-VjBIUA6-z-mwUfrwa5SkeKUxj7K-KXGYAXDsEEAvI_3uK_v7R0fh4NTpiQ2ilBNfG4gUGNAMDpJPlEfSln7EdinjMKpVmshebzLjHkiBUyQChGftBSiwekRXbd5zav8N7yAFM2EnheCsCKg5e0NTe_CydhWF95XSksGUhux1QdAnugLl26BPOzvfIX6ODY4vw"
 
       - name: Build and push
         uses: docker/build-push-action@v4
