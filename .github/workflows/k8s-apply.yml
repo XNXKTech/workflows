@@ -3,6 +3,11 @@ name: Kubernetes
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        description: The OSs that the workflow is run on
+        required: false
+        type: string
       file:
         type: string
         required: true
@@ -15,6 +20,10 @@ jobs:
     name: Apply
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: ${{ fromJson(inputs.runs-on) }}
 
     concurrency:
       group: ${{ github.workflow }}-kubernetes-${{ inputs.file }}
