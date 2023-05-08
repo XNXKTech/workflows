@@ -25,9 +25,9 @@ jobs:
       matrix:
         os: ${{ fromJson(inputs.runs-on) }}
 
-    concurrency:
-      group: ${{ github.workflow }}-kubernetes-${{ inputs.file }}
-      cancel-in-progress: false
+    #concurrency:
+    #  group: ${{ github.workflow }}-kubernetes-${{ inputs.file }}
+    #  cancel-in-progress: false
 
     steps:
       - name: Split Version or Branch
