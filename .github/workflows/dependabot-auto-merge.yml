@@ -48,7 +48,7 @@ jobs:
     if: ${{ github.actor == 'dependabot[bot]' }}
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.6.0
         with:
           fetch-depth: 1
 

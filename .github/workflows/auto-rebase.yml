@@ -37,7 +37,7 @@ jobs:
           reaction: "+1" # Optional, defaults to +1
 
       - name: Checkout the latest code
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.6.0
         with:
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
 
