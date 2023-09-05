@@ -60,7 +60,7 @@ jobs:
           msg: ${{ github.ref }}
 
       - name: Checkout ${{ steps.split.outputs._2 }}
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4.0.0
         with:
           ref: ${{ steps.split.outputs._2 }}
 
