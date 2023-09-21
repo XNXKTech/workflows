@@ -27,6 +27,14 @@ on:
         description: The URL to use for the Production.
         type: string
         required: false
+      prefix_version:
+        default: ""
+        type: string
+        required: false
+      fixed_deployment_name:
+        default: ""
+        type: string
+        required: false
     secrets:
       K8S_CONFIG:
         required: true
@@ -78,15 +86,33 @@ jobs:
           msg: ${{ steps.reponame.outputs.lowercase }}
 
       - name: Setup Deployments to Production
+        if: inputs.fixed_deployment_name == ''
         uses: starubiquitous/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
           args: --insecure-skip-tls-verify set image deployment/${{ steps.split_reponame.outputs._1 }} ${{ steps.split_reponame.outputs._1 }}=${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}:${{ steps.split.outputs._2 }} -n=${{ inputs.namespace }}
 
+      - name: Setup Fixed Deployments to Production
+        if: inputs.fixed_deployment_name != ''
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify set image deployment/${{ inputs.fixed_deployment_name }} ${{ inputs.fixed_deployment_name }}=${{ inputs.registry }}/${{ steps.reponame.outputs.lowercase }}:${{ inputs.prefix_version }}${{ steps.split.outputs._2 }} -n=${{ inputs.namespace }}
+
       - name: Restart Deployment
+        if: inputs.fixed_deployment_name == ''
         uses: starubiquitous/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
           args: --insecure-skip-tls-verify rollout restart deployment/${{ steps.split_reponame.outputs._1 }} -n=${{ inputs.namespace }}
+
+      - name: Restart Fixed Deployment
+        if: inputs.fixed_deployment_name != ''
+        uses: starubiquitous/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: --insecure-skip-tls-verify rollout restart deployment/${{ inputs.fixed_deployment_name }} -n=${{ inputs.namespace }}
