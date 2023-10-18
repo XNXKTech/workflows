@@ -40,7 +40,7 @@ jobs:
         node-versions: ${{fromJson(inputs.versions)}}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.1
         with:
           fetch-depth: 1
           ref: ${{ github.head_ref }}
